@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Touchdown Tickets 자동 플레이 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3EF; --surface:#FFFFFF; --ink:#16211A; --muted:#56665C; --line:#D3DDD6;
+  --turf:#1E7A3E; --deep:#0E2A1B; --gold:#F2B705; --red:#C8102E; --btn:#0E2A1B; --btn-ink:#FFFFFF;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B140F; --surface:#13201A; --ink:#E6EFE9; --muted:#9AAEA2; --line:#284034;
+    --turf:#3FA864; --deep:#0E2A1B; --gold:#F5C53A; --red:#F0485E; --btn:#F5C53A; --btn-ink:#14201A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B140F; --surface:#13201A; --ink:#E6EFE9; --muted:#9AAEA2; --line:#284034;
+  --turf:#3FA864; --deep:#0E2A1B; --gold:#F5C53A; --red:#F0485E; --btn:#F5C53A; --btn-ink:#14201A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 48px;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+/* Cabinet */
+.cab{background:#0E2A1B;border-radius:22px 22px 10px 10px;padding:14px 14px 18px;box-shadow:0 0 0 3px #F2B705 inset}
+.topper{text-align:center;padding:6px 0 10px;color:#F2B705;font-weight:700;letter-spacing:.02em}
+.topper .logo{font-size:26px;line-height:1.05}
+.topper .logo small{display:block;color:#fff;font-size:15px;letter-spacing:.2em}
+.topper .jp{display:inline-block;margin-top:8px;padding:3px 14px;border:2px solid #C8102E;border-radius:6px;color:#FF5A6E;background:#000;font-size:15px;font-variant-numeric:tabular-nums}
+.monitor{position:relative;background:#06140C;border:6px solid #000;border-radius:8px;padding:10px 12px;margin:0 auto 12px;max-width:300px}
+.rung{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:6px;padding:4px 10px;margin:3px 0;border-radius:4px;background:#14502C;color:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.rung.top{background:#6B4E00}
+.rung.cur{background:#F2B705;color:#16211A}
+.rung .rv{color:#FFD45C;font-size:12px}
+.rung.cur .rv{color:#6B4300}
+.banner{position:absolute;inset:30% 8%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-weight:700;text-align:center;opacity:0;transform:scale(.92);transition:opacity .15s,transform .15s;pointer-events:none}
+.banner.show{opacity:1;transform:scale(1)}
+.banner .b1{font-size:24px;line-height:1.1}.banner .b2{font-size:30px;font-variant-numeric:tabular-nums}
+.banner.ok{background:#1E7A3E;color:#fff}.banner.red{background:#1A1300;color:#FFC21A;box-shadow:0 0 0 3px #F2B705}
+.banner.jp{background:#F2B705;color:#16211A;box-shadow:0 0 0 3px #fff}.banner.miss,.banner.end{background:#2B2B2B;color:#fff}
+canvas{display:block;width:100%;height:auto;border-radius:6px;background:#1E7A3E}
+.ledge{position:relative;height:16px;background:#F2B705;border-radius:6px;margin-top:8px}
+.cab{padding-bottom:30px}
+.pfwrap{display:flex;gap:6px;align-items:stretch}
+.pfwrap canvas{flex:1;min-width:0}
+.vgauge{position:relative;width:20px;flex:none;border-radius:10px;background:#06140C;border:2px solid #F2B705;overflow:hidden}
+.vfill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(0deg,#DCE7DF,#F2B705 55%,#C8102E)}
+.vt{position:absolute;top:3px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;color:#fff}
+.knob{position:absolute;right:-2px;top:-12px;width:46px;height:46px;padding:0;border-radius:50%;background:#C8102E;color:#fff;border:3px solid #fff;font-size:11px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 3px 0 #7A0012}
+.knob.held{transform:translateY(4px);box-shadow:0 0 0 #7A0012;background:#A00018}
+/* Panel */
+h1{font-size:24px;line-height:1.25;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 18px;max-width:60ch}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+button{font:inherit;font-size:14px;border-radius:999px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--btn);color:var(--btn-ink);border-color:var(--btn);font-weight:700}
+button[aria-pressed="true"]{background:var(--turf);color:#fff;border-color:var(--turf)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}
+@media (max-width:560px){.settings{grid-template-columns:1fr}}
+.settings label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+select{width:100%;font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.big{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-top:2px solid var(--ink);padding-top:12px}
+.big .num{font-size:60px;line-height:1;font-weight:700;color:var(--turf);font-variant-numeric:tabular-nums}
+.big .cap{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);padding:10px 12px}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.hi b{color:var(--turf)}
+.tablehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px}
+.tablehead h2{margin:0}
+.tablehead + .stats{margin-top:8px}
+h2{font-size:16px;margin:18px 0 8px}
+.dist{display:flex;flex-direction:column;gap:4px}
+.drow{display:grid;grid-template-columns:72px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:13px}
+.track{height:12px;background:var(--line);border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--turf)}
+.drow span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.log{list-style:none;padding:0;margin:0;font-size:13px;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.log li{display:grid;grid-template-columns:64px 64px 1fr auto;gap:8px;padding:6px 12px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.log li:last-child{border-bottom:0}
+.tag{font-weight:700}.tag.red{color:var(--red)}.tag.jp{color:#B07F00}.tag.miss,.tag.end{color:var(--muted)}.tag.ok{color:var(--turf)}
+.note{font-size:13px;color:var(--muted);margin-top:14px;max-width:65ch}
+.langrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.toprow{display:flex;gap:8px;align-items:center;flex:none}
+.snd{padding:6px 12px;font-size:13px}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.lang button{border:0;border-radius:0;padding:6px 12px;font-size:13px}
+.lang button[aria-pressed="true"]{background:var(--deep);color:#fff}
+.launch{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;margin-bottom:18px}
+.launch h2{margin:0 0 4px}
+.launch p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.gauge{position:relative;height:30px;border-radius:8px;background:linear-gradient(270deg,#DCE7DF,#F2B705 60%,#C8102E);overflow:hidden}
+.gauge .needle{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;background:var(--ink);left:0}
+.ticks{display:grid;grid-template-columns:repeat(12,1fr);font-size:11px;color:var(--muted);text-align:center;margin-top:3px;font-variant-numeric:tabular-nums}
+.launchrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#fire{touch-action:none;user-select:none;-webkit-user-select:none;padding:12px 22px;font-size:15px}
+#fire.held{background:var(--red);border-color:var(--red);color:#fff}
+#guess{font-size:14px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.banner{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section data-i18n-aria="aCab" aria-label="게임기 화면">
+    <div class="cab">
+      <div class="topper"><div class="logo">TOUCHDOWN<small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div></div>
+      <div class="monitor" aria-live="polite">
+        <div id="ladder"></div>
+        <div class="banner" id="banner"><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
+      </div>
+      <div class="pfwrap"><canvas id="pf" width="440" height="330" data-i18n-aria="aPf" aria-label="플레이필드: 핀, 12개 홀, 발사 레인"></canvas><div class="vgauge" aria-hidden="true"><div class="vfill" id="vfill"></div><span class="vt">MAX</span></div></div>
+      <div class="ledge"><button id="knob" class="knob" aria-label="PULL">PULL</button></div>
+    </div>
+  </section>
+
+  <section data-i18n-aria="aPanel" aria-label="시뮬레이션 제어와 결과">
+    <div class="langrow"><h1 data-i18n="title">Touchdown Tickets 시뮬레이터</h1><div class="toprow"><button id="snd" class="snd" aria-pressed="true"></button><div class="lang" role="group" aria-label="Language"><button id="lkKo" data-lang="ko">한국어</button><button id="lkEn" data-lang="en">English</button></div></div></div>
+    <p class="lede" data-i18n="lede">컴퓨터 자동 플레이와 직접 발사를 모두 지원합니다. 1크레딧 1볼, 빈 홀이면 한 칸 상승, 녹색 홀이면 꽝(2장)과 리셋, 골드 보너스 라이트는 빈 홀 사이에서 무작위로 정해집니다.</p>
+
+    <div class="controls">
+      <button class="primary" id="play">자동 플레이 시작</button>
+      <button id="one" data-i18n="one">1볼 발사</button>
+      <button id="b1k" data-i18n="b1k">1,000크레딧 즉시 실행</button>
+      <button id="b10k" data-i18n="b10k">10,000크레딧 즉시 실행</button>
+    </div>
+
+    <div class="launch">
+      <h2 data-i18n="launchH">직접 발사</h2>
+      <p data-i18n="launchP">버튼을 누르고 있으면 게이지 바늘이 오른쪽(약하게)에서 왼쪽(세게)으로 움직이고 다시 돌아옵니다. 바늘 아래 번호가 노리는 홀이고, 플레이필드에도 노란 화살표로 표시됩니다. 원하는 홀 위에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.</p>
+      <div class="launchrow"><button class="primary" id="fire" data-i18n="fire">누르고 있다가 놓아서 발사</button><span id="guess" aria-live="polite">힘 0% · 예상 도착 12번 홀 부근</span></div>
+    </div>
+
+    <div class="settings">
+      <div><label for="speed" data-i18n="speedL">애니메이션 속도</label>
+        <select id="speed"><option value="1" data-i18n="sp1">보통</option><option value="3" data-i18n="sp2">빠르게</option><option value="8" data-i18n="sp3">매우 빠르게</option></select></div>
+      <div><label for="skill" data-i18n="skillL">칸별 성공 확률</label>
+        <select id="skill"><option value="base" data-i18n="skB">기준안</option><option value="luck" data-i18n="skL">순수 운</option><option value="strong" data-i18n="skS">스킬 강함</option></select></div>
+      <div><label for="mult" data-i18n="multL">티켓 배율</label>
+        <select id="mult"><option value="1">×1</option><option value="2">×2</option></select></div>
+    </div>
+
+    <div class="big"><span class="num" id="avg">0.0</span><span class="cap"><span data-i18n="avgCap">크레딧당 평균 티켓</span> <span id="theory"></span></span></div>
+
+    <div class="tablehead"><h2 data-i18n="dataH">플레이 데이터</h2><button id="reset" data-i18n="reset">데이터 지우기</button></div>
+    <div class="stats">
+      <div class="stat hi"><b id="sAvg">0.0</b><span data-i18n="st1">크레딧당 평균 티켓</span></div>
+      <div class="stat"><b id="sRecent">-</b><span data-i18n="st2">최근 100크레딧 평균</span></div>
+      <div class="stat"><b id="sTheory">24.8</b><span data-i18n="st3">이론 평균 (현재 설정)</span></div>
+      <div class="stat"><b id="sCred">0</b><span data-i18n="st4">사용 크레딧</span></div>
+      <div class="stat"><b id="sTix">0</b><span data-i18n="st5">지급 티켓</span></div>
+      <div class="stat"><b id="sStep">1칸</b><span data-i18n="st6">현재 도전 칸</span></div>
+      <div class="stat"><b id="sRed">0</b><span id="sRedF">골드 보너스 당첨</span></div>
+      <div class="stat"><b id="sJp">0</b><span id="sJpF">잭팟</span></div>
+      <div class="stat"><b id="sMiss">0</b><span data-i18n="st9">꽝 (녹색 홀)</span></div>
+    </div>
+
+    <h2 data-i18n="distH">게임이 끝날 때 몇 칸까지 성공했는지</h2>
+    <div class="dist" id="dist"></div>
+
+    <h2 data-i18n="logH">최근 기록</h2>
+    <ul class="log" id="log"><li style="display:block;color:var(--muted)">자동 플레이를 시작하거나 1볼을 발사하면 기록이 쌓입니다.</li></ul>
+    <p class="note" data-i18n="note">직접 발사는 힘에 따라 노린 홀을 정하고, 핀에 튕기는 효과로 평균 약 1칸 정도 좌우로 흩어집니다. 자동 플레이는 아래 확률 설정을 따릅니다. 칸별 성공 확률은 추정값입니다. 1~4칸은 컴퓨터가 빈 홀을 노려 넣는 스킬을 반영하고(기준안 40, 40, 28, 20%), 5칸부터는 12개 홀 중 무작위로 떨어집니다.</p>
+  </section>
+</div>
+
+<script>
+const I18N = {
+ ko: { title:'Touchdown Tickets 시뮬레이터', lede:'컴퓨터 자동 플레이와 직접 발사를 모두 지원합니다. 1크레딧 1볼, 빈 홀이면 한 칸 상승, 녹색 홀이면 꽝(2장)과 리셋, 골드 보너스 라이트는 빈 홀 사이를 한 칸씩 돌다가 볼이 들어가는 순간 판정됩니다.',
+  one:'1볼 발사', b1k:'1,000크레딧 즉시 실행', b10k:'10,000크레딧 즉시 실행', playStart:'자동 플레이 시작', playStop:'자동 플레이 멈춤',
+  launchH:'직접 발사', launchP:'발사 레인 오른쪽의 세로 게이지가 힘을 보여 줍니다. 게임기 아래의 빨간 PULL 손잡이나 아래 버튼을 누르고 있으면 게이지가 아래(약하게)에서 위(세게)로 올라갔다 내려옵니다. 세게 쏠수록 왼쪽 홀로 갑니다. 원하는 힘에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.',
+  fire:'누르고 있다가 놓아서 발사', guess:(p,h)=>`힘 ${p}% · 예상 도착 ${h}번 홀 부근`,
+  speedL:'애니메이션 속도', sp1:'보통', sp2:'빠르게', sp3:'매우 빠르게', skillL:'칸별 성공 확률', skB:'기준안', skL:'순수 운', skS:'스킬 강함', multL:'티켓 배율',
+  avgCap:'크레딧당 평균 티켓', theory:v=>`(이론값 ${v}장)`, unit:v=>v+'장', dataH:'플레이 데이터', reset:'데이터 지우기',
+  st1:'크레딧당 평균 티켓', st2:'최근 100크레딧 평균', st3:'이론 평균 (현재 설정)', st4:'사용 크레딧', st5:'지급 티켓', st6:'현재 도전 칸', st9:'꽝 (녹색 홀)',
+  red:'골드 보너스 당첨', redF:n=>`골드 보너스 당첨 (${n}크레딧에 1회)`, jp:'잭팟', jpF:n=>`잭팟 (${n}크레딧에 1회)`,
+  distH:'게임이 끝날 때 몇 칸까지 성공했는지', reach:k=>k===8?'8번째까지':k+'칸까지', logH:'최근 기록', logEmpty:'자동 플레이를 시작하거나 1볼을 발사하면 기록이 쌓입니다.',
+  stepN:k=>k===8?'8번째':k+'칸', holeN:h=>h+'번 홀', kinds:{ok:'성공',red:'골드 보너스',jp:'잭팟',miss:'꽝',end:'8번째 종료'}, resetTag:' · 리셋',
+  bOk:k=>'성공 '+k+'칸', bMiss:'TRY AGAIN', bEnd:'8번째 종료 · 1칸부터',
+  note:'직접 발사는 힘에 따라 노린 홀을 정하고, 핀에 튕기는 효과로 평균 약 1~2칸 좌우로 흩어지며, 가끔(약 15%) 크게 튕겨 먼 홀로 갑니다. 자동 플레이는 위 확률 설정을 따릅니다. 칸별 성공 확률은 추정값입니다. 1~4칸은 컴퓨터가 빈 홀을 노려 넣는 스킬을 반영하고(기준안 40, 40, 28, 20%), 5칸부터는 12개 홀 중 무작위로 떨어집니다.',
+  aCab:'게임기 화면', aPf:'플레이필드: 핀, 12개 홀, 발사 레인', aPanel:'시뮬레이션 제어와 결과', sndOn:'🔊 소리 켜짐', sndOff:'🔇 소리 꺼짐' },
+ en: { title:'Touchdown Tickets simulator', lede:'Watch the computer play or shoot yourself. 1 credit = 1 ball. An empty hole moves you up a step; a green hole is a miss (2 tickets) and resets. The gold bonus light steps through the empty holes and is judged the moment the ball drops in.',
+  one:'Shoot 1 ball', b1k:'Run 1,000 credits now', b10k:'Run 10,000 credits now', playStart:'Start auto play', playStop:'Stop auto play',
+  launchH:'Shoot it yourself', launchP:'The vertical gauge beside the launch lane shows your power. Hold the red PULL knob under the cabinet, or the button below, and the gauge rises from soft (bottom) to hard (top) and back. Harder shots travel further left. Let go at the power you want. The space bar works too.',
+  fire:'Hold, then release to shoot', guess:(p,h)=>`Power ${p}% · aiming near hole ${h}`,
+  speedL:'Animation speed', sp1:'Normal', sp2:'Fast', sp3:'Very fast', skillL:'Step success rates', skB:'Base case', skL:'Pure luck', skS:'Strong skill', multL:'Ticket multiplier',
+  avgCap:'avg. tickets per credit', theory:v=>`(theory ${v})`, unit:v=>v, dataH:'Play data', reset:'Clear data',
+  st1:'Avg. tickets per credit', st2:'Avg. of last 100 credits', st3:'Theoretical avg. (current settings)', st4:'Credits played', st5:'Tickets paid', st6:'Current step', st9:'Misses (green hole)',
+  red:'Gold bonus hits', redF:n=>`Gold bonus hits (1 in ${n} credits)`, jp:'Jackpots', jpF:n=>`Jackpots (1 in ${n} credits)`,
+  distH:'How far each run got before it ended', reach:k=>k===8?'Through 8th':'Through '+k, logH:'Recent plays', logEmpty:'Start auto play or shoot a ball to see plays here.',
+  stepN:k=>k===8?'8th':'Step '+k, holeN:h=>'Hole '+h, kinds:{ok:'Success',red:'Gold bonus',jp:'Jackpot',miss:'Miss',end:'8th over'}, resetTag:' · reset',
+  bOk:k=>'Step '+k+' made', bMiss:'TRY AGAIN', bEnd:'8th over · back to 1',
+  note:'When you shoot, power sets the hole you aim at and the pins scatter the ball by one to two holes, and about 15% of shots take a big bounce to a far hole. Auto play follows the success-rate setting above. Step success rates are estimates: steps 1–4 include the computer aiming at an empty hole (base case 40, 40, 28, 20%), and from step 5 the ball lands at random among the 12 holes.',
+  aCab:'Game cabinet', aPf:'Playfield: pins, 12 holes, launch lane', aPanel:'Simulation controls and results', sndOn:'🔊 Sound on', sndOff:'🔇 Sound off' }
+};
+let LANG = 'ko';
+try { const v = localStorage.getItem('tdLang'); if (v === 'en' || v === 'ko') LANG = v; } catch (e) {}
+const tr = () => I18N[LANG];
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const v = tr()[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', tr()[el.dataset.i18nAria]));
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG ? 'true' : 'false'));
+  document.getElementById('play').textContent = running ? tr().playStop : tr().playStart;
+  document.title = tr().title;
+  $('snd').textContent = soundOn ? tr().sndOn : tr().sndOff; $('snd').setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+}
+const N = 12;
+const LAD = [10, 15, 35, 55, 85, 110, 140, 2];
+const RED = [90, 120, 170, 250, 340, 420, 500, 1000];
+const SKILL = { base: [.4, .4, .28, .2, 0, 0, 0, 0], luck: [0, 0, 0, 0, 0, 0, 0, 0], strong: [.5, .5, .4, .3, 0, 0, 0, 0] };
+const THEORY = { base: 49.7, luck: 46.8, strong: 50.9 };
+const MISS = 2;
+
+let lit = new Array(N).fill(false);
+let st = { cred: 0, tix: 0, red: 0, jp: 0, miss: 0, reach: new Array(9).fill(0), games: 0 };
+let running = false, busy = false, redPos = 0, log = [], recent = [];
+const $ = id => document.getElementById(id);
+const mult = () => +$('mult').value;
+const skillKey = () => $('skill').value;
+const step = () => lit.filter(Boolean).length + 1;
+const fmt = n => n.toLocaleString('ko-KR');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- game logic ---------- */
+function shoot() {
+  const k = step(), s = SKILL[skillKey()][k - 1];
+  const empty = [...Array(N).keys()].filter(i => !lit[i]);
+  const aim = empty[Math.floor(Math.random() * empty.length)];
+  const hole = Math.random() < s ? aim : Math.floor(Math.random() * N);
+  const red = empty[Math.floor(Math.random() * empty.length)];
+  return { k, hole, red, aim };
+}
+function settle(r) {
+  const m = mult(); let pay, kind, reset = false;
+  st.cred++;
+  if (lit[r.hole]) { pay = MISS * m; kind = 'miss'; st.miss++; reset = true; }
+  else if (r.hole === r.red) {
+    pay = RED[r.k - 1] * m; lit[r.hole] = true;
+    if (r.k === 8) { kind = 'jp'; st.jp++; reset = true; } else { kind = 'red'; st.red++; }
+  } else { pay = LAD[r.k - 1] * m; kind = r.k === 8 ? 'end' : 'ok'; lit[r.hole] = true; if (r.k === 8) reset = true; }
+  st.tix += pay;
+  recent.push(pay); if (recent.length > 100) recent.shift();
+  if (reset) { const reached = lit.filter(Boolean).length; st.reach[Math.min(reached, 8)]++; st.games++; }
+  return { pay, kind, reset };
+}
+function pushLog(r, res) {
+  log.unshift({ n: st.cred, k: r.k, hole: r.hole + 1, ...res });
+  if (log.length > 40) log.pop();
+}
+
+/* ---------- monitor ---------- */
+function drawLadder() {
+  const m = mult(), k = step();
+  let h = '';
+  for (let i = 8; i >= 1; i--) {
+    const cls = 'rung' + (i === 8 ? ' top' : '') + (i === k ? ' cur' : '');
+    const left = tr().stepN(i);
+    const reg = i === 8 ? '' : fmt(LAD[i - 1] * m);
+    const rv = i === 8 ? 'BIG BONUS' : 'BONUS ' + fmt(RED[i - 1] * m);
+    h += `<div class="${cls}"><span>${left}</span><span>${reg}</span><span class="rv">${rv}</span></div>`;
+  }
+  $('ladder').innerHTML = h;
+  $('jpTop').textContent = 'BIG BONUS';
+}
+let bannerT;
+function banner(kind, pay, k) {
+  const b = $('banner');
+  const t = { ok: [tr().bOk(k), '+' + fmt(pay)], red: ['GOLD BONUS!', '+' + fmt(pay)], jp: ['JACKPOT!', '+' + fmt(pay)], miss: [tr().bMiss, '+' + fmt(pay)], end: [tr().bEnd, '+' + fmt(pay)] }[kind];
+  $('b1').textContent = t[0]; $('b2').textContent = t[1];
+  b.className = 'banner show ' + kind;
+  clearTimeout(bannerT);
+  bannerT = setTimeout(() => b.className = 'banner ' + kind, kind === 'jp' ? 2600 : kind === 'red' ? 4000 : kind === 'miss' ? 3000 : 700 / spd() + 1000);
+}
+
+/* ---------- playfield ---------- */
+const cv = $('pf'), ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height, LANE = W - 34, HOLE_Y = H - 66;
+const holeX = i => 26 + i * ((LANE - 46) / (N - 1));
+const PCX = (LANE - 6) / 2, PHW = (LANE - 6) / 2;
+const pinY = (r, x) => 114 + r * 24 - 18 * Math.pow((x - PCX) / PHW, 2);
+const pins = [];
+for (let r = 0; r < 6; r++) {
+  const n = r % 2 ? 7 : 8, gap = (LANE - 50) / 7;
+  for (let c = 0; c < n; c++) { const x = 25 + c * gap + (r % 2 ? gap / 2 : 0); pins.push([x, pinY(r, x)]); }
+}
+/* static stadium background, drawn once */
+const bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+(function paintBg() {
+  const g = bg.getContext('2d');
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#060D1C'); sky.addColorStop(0.32, '#0B1D2A'); sky.addColorStop(0.5, '#123D24'); sky.addColorStop(0.62, '#1E7A3E'); sky.addColorStop(1, '#176530');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  [[40, 22], [PCX, 8], [LANE - 30, 22]].forEach(([x, y]) => {
+    const l = g.createRadialGradient(x, y, 2, x, y, 90);
+    l.addColorStop(0, 'rgba(255,255,240,0.55)'); l.addColorStop(1, 'rgba(255,255,240,0)');
+    g.fillStyle = l; g.fillRect(0, 0, W, H);
+  });
+  for (let j = 0; j < 3; j++) {
+    const rx = PHW - 12 - j * 16, ry = 72 - j * 12, cy = 20;
+    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 8; g.beginPath(); g.ellipse(PCX, cy, rx, ry, 0, Math.PI * 0.12, Math.PI * 0.88); g.stroke();
+    for (let a = 0.13; a <= 0.875; a += 0.06 + j * 0.01) {
+      const x = PCX + rx * Math.cos(Math.PI * a), y = cy + ry * Math.sin(Math.PI * a);
+      g.fillStyle = '#D2263A'; g.fillRect(x - 2.5, y - 6, 5, 9);
+      g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillRect(x - 2.5, y - 6, 5, 2);
+    }
+  }
+  g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 1;
+  for (let y = HOLE_Y - 40; y < H; y += 14) { g.beginPath(); g.moveTo(8, y); g.lineTo(LANE - 10, y); g.stroke(); }
+  pins.forEach(([x, y]) => {
+    const h = g.createRadialGradient(x, y, 0, x, y, 8);
+    h.addColorStop(0, 'rgba(255,255,255,0.7)'); h.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = h; g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill();
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(x, y, 3.2, 0, 7); g.fill();
+  });
+  const step = (LANE - 46) / (N - 1);
+  for (let i = 0; i <= N; i++) {
+    const x = 26 + (i - 0.5) * step;
+    g.fillStyle = '#C99400'; g.beginPath(); g.moveTo(x - 3, HOLE_Y + 16); g.lineTo(x + 3, HOLE_Y + 16); g.lineTo(x + 7, H - 18); g.lineTo(x - 1, H - 18); g.closePath(); g.fill();
+    g.fillStyle = '#F2C230'; g.beginPath(); g.moveTo(x - 3, HOLE_Y + 16); g.lineTo(x + 1, HOLE_Y + 16); g.lineTo(x + 4, H - 18); g.lineTo(x - 1, H - 18); g.closePath(); g.fill();
+  }
+  g.strokeStyle = '#F4F6F5'; g.lineWidth = 5; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(5, H - 12); g.lineTo(5, 46); g.quadraticCurveTo(5, 12, 40, 12); g.lineTo(LANE - 30, 12); g.quadraticCurveTo(LANE + 18, 12, LANE + 18, 46); g.lineTo(LANE + 18, H - 10); g.stroke();
+  g.lineWidth = 3; g.beginPath(); g.moveTo(LANE - 6, H - 10); g.lineTo(LANE - 6, 70); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '11px "IBM Plex Sans KR", sans-serif'; g.textAlign = 'center';
+  for (let i = 0; i < N; i++) g.fillText(i + 1, holeX(i), H - 4);
+})();
+function drawField(ball, redShow) {
+  ctx.drawImage(bg, 0, 0);
+  for (let i = 0; i < N; i++) {
+    const x = holeX(i), on = lit[i] ? '#39E26A' : (i === redShow ? '#FFC21A' : null);
+    ctx.fillStyle = '#0A0F0C'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 12, 0, 7); ctx.fill();
+    if (on) { const gl = ctx.createRadialGradient(x, HOLE_Y, 2, x, HOLE_Y, 18); gl.addColorStop(0, on); gl.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, HOLE_Y, 18, 0, 7); ctx.fill(); }
+    ctx.fillStyle = on || '#F2F2F2'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 8.5, 0, 7); ctx.fill();
+  }
+  const pull = charging ? power : 0;
+  ctx.fillStyle = '#9AA59F'; ctx.fillRect(LANE + 1, H - 18 + pull * 12, 10, 18);
+  ctx.fillStyle = '#C8102E'; ctx.beginPath(); ctx.arc(LANE + 6, H - 2 + pull * 12, 7, 0, 7); ctx.fill();
+  if (ball) {
+    const bgd = ctx.createRadialGradient(ball[0] - 2.4, ball[1] - 2.4, 1, ball[0], ball[1], 8.4);
+    bgd.addColorStop(0, '#FFF3B0'); bgd.addColorStop(0.5, '#F2B705'); bgd.addColorStop(1, '#9C6B00');
+    ctx.fillStyle = bgd; ctx.beginPath(); ctx.arc(ball[0], ball[1], 8.4, 0, 7); ctx.fill();
+  }
+}
+/* flight = launch up the lane and along the top rail (decelerating), then a gravity fall through the pins */
+function buildFlight(r) {
+  const aimX = r.manual ? holeX(r.aim) : holeX(r.hole);
+  const entryX = Math.max(30, Math.min(LANE - 26, aimX + (Math.random() - .5) * 40));
+  const A = [];
+  for (let y = H - 20; y >= 46; y -= 4) A.push([LANE + 6, y]);
+  for (let a = 0; a <= 90; a += 5) { const t = a * Math.PI / 180; A.push([LANE - 14 + 20 * Math.cos(t), 46 - 20 * Math.sin(t)]); }
+  for (let x = LANE - 18; x > entryX; x -= 4) A.push([x, 26]);
+  A.push([entryX, 26]);
+  const cum = [0];
+  for (let i = 1; i < A.length; i++) cum.push(cum[i - 1] + Math.hypot(A[i][0] - A[i - 1][0], A[i][1] - A[i - 1][1]));
+  const LA = cum[cum.length - 1];
+  const tx = holeX(r.hole), B = [[entryX, 26]];
+  let x = entryX;
+  for (let row = 0; row < 6; row++) {
+    const remain = 6 - row;
+    x += (tx - x) / remain + (Math.random() - .5) * 18 * (remain > 2 ? 1 : .3);
+    x = Math.max(16, Math.min(LANE - 20, x));
+    B.push([x, pinY(row, x) - 10]);
+  }
+  B.push([tx, HOLE_Y - 18], [tx, HOLE_Y]);
+  const dB = [300, 190, 180, 170, 165, 160, 160, 100];
+  return { A, cum, LA, dA: 500 + LA * 1.15, B, dB };
+}
+function pointAt(fl, s) {
+  let i = 1; while (i < fl.cum.length - 1 && fl.cum[i] < s) i++;
+  const a = fl.A[i - 1], b = fl.A[i], seg = fl.cum[i] - fl.cum[i - 1] || 1, u = Math.max(0, Math.min(1, (s - fl.cum[i - 1]) / seg));
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+}
+const spd = () => +$('speed').value;
+/* ---------- sound (Web Audio, synthesized) ---------- */
+var soundOn = true, actx = null, chargeOsc = null, chargeGain = null;
+const VOL = 0.5; /* overall sound level */
+try { if (localStorage.getItem('tdSound') === 'off') soundOn = false; } catch (e) {}
+function ac() {
+  if (!soundOn) return null;
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { return null; }
+  return actx;
+}
+function tone(f, d, type = 'sine', v = 0.12, delay = 0, f2 = null) {
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * VOL, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + 0.02);
+}
+function noise(d, v = 0.08, hp = 800) {
+  const a = ac(); if (!a) return;
+  const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = b; f.type = 'highpass'; f.frequency.value = hp; g.gain.value = v * VOL;
+  s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  launch() { noise(0.25, 0.12, 400); tone(180, 0.3, 'triangle', 0.1, 0, 520); },
+  pin() { tone(1400 + Math.random() * 900, 0.05, 'square', 0.035); },
+  chase() { tone(880, 0.05, 'square', 0.08); },
+  drop() { tone(300, 0.12, 'triangle', 0.12, 0, 120); },
+  ok() { tone(784, 0.12, 'triangle', 0.12); tone(1046, 0.18, 'triangle', 0.12, 0.09); },
+  red() { [659, 784, 988, 1318].forEach((f, i) => tone(f, 0.16, 'square', 0.07, i * 0.07)); tone(1318, 0.35, 'triangle', 0.1, 0.3); },
+  jp() { [523, 659, 784, 1046, 784, 1046, 1318, 1568].forEach((f, i) => tone(f, 0.2, 'square', 0.07, i * 0.11)); tone(1046, 0.9, 'triangle', 0.12, 0.9); noise(0.6, 0.05, 3000); },
+  miss() { tone(220, 0.35, 'sawtooth', 0.07, 0, 110); },
+  end() { tone(330, 0.25, 'triangle', 0.08, 0, 220); }
+};
+function chargeStart() {
+  const a = ac(); if (!a) return;
+  chargeOsc = a.createOscillator(); chargeGain = a.createGain();
+  chargeOsc.type = 'triangle'; chargeOsc.frequency.value = 200; chargeGain.gain.value = 0.04 * VOL;
+  chargeOsc.connect(chargeGain).connect(a.destination); chargeOsc.start();
+}
+function chargeSet(p) { if (chargeOsc) chargeOsc.frequency.setTargetAtTime(200 + p * 500, actx.currentTime, 0.02); }
+function chargeStop() { if (chargeOsc) { try { chargeGain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.02); chargeOsc.stop(actx.currentTime + 0.1); } catch (e) {} chargeOsc = null; } }
+
+function animate(r) {
+  return new Promise(done => {
+    const fl = buildFlight(r), k = (reduce ? 0.35 : 1) / spd();
+    const tA = fl.dA * k, dB = fl.dB.map(d => d * k), total = tA + dB.reduce((a, b) => a + b, 0);
+    let t0 = null, lastSeg = -1, lastChase = 0;
+    SFX.launch();
+    function frame(ts) {
+      if (!t0) { t0 = ts; lastChase = ts; }
+      const el = Math.min(ts - t0, total);
+      let ball;
+      if (el < tA) {
+        const u = el / tA, s = fl.LA * (1 - (1 - u) * (1 - u));
+        ball = pointAt(fl, s);
+      } else {
+        let e = el - tA, j = 0;
+        while (j < dB.length - 1 && e > dB[j]) { e -= dB[j]; j++; }
+        const u = Math.min(1, e / dB[j]), a = fl.B[j], b = fl.B[j + 1];
+        if (j !== lastSeg) { lastSeg = j; if (j >= 1 && j < dB.length - 1) SFX.pin(); }
+        const bounce = j >= 1 && j < dB.length - 1 ? -Math.sin(u * Math.PI) * 5 : 0;
+        ball = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u * u + bounce];
+      }
+      if (ts - lastChase >= 200 / spd()) { lastChase = ts; stepRed(); if (spd() < 8) SFX.chase(); }
+      drawField(ball, redPos);
+      if (el < total) requestAnimationFrame(frame); else { if (lit[redPos]) stepRed(); r.red = redPos; SFX.drop(); done(); }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+/* ---------- stats view ---------- */
+function render() {
+  const sk = skillKey();
+  $('avg').textContent = st.cred ? (st.tix / st.cred).toFixed(1) : '0.0';
+  $('theory').textContent = tr().theory((THEORY[sk] * mult()).toFixed(1));
+  $('sCred').textContent = fmt(st.cred); $('sTix').textContent = fmt(st.tix);
+  $('sAvg').textContent = st.cred ? tr().unit((st.tix / st.cred).toFixed(1)) : '0.0';
+  $('sRecent').textContent = recent.length ? tr().unit((recent.reduce((a, b) => a + b, 0) / recent.length).toFixed(1)) : '-';
+  $('sTheory').textContent = tr().unit((THEORY[sk] * mult()).toFixed(1));
+  $('sStep').textContent = tr().stepN(step());
+  $('sRed').textContent = fmt(st.red); $('sJp').textContent = fmt(st.jp); $('sMiss').textContent = fmt(st.miss);
+  $('sRedF').textContent = st.red ? tr().redF(Math.round(st.cred / st.red)) : tr().red;
+  $('sJpF').textContent = st.jp ? tr().jpF(fmt(Math.round(st.cred / st.jp))) : tr().jp;
+  const tot = st.games || 1; let h = '';
+  for (let k = 1; k <= 8; k++) {
+    const label = tr().reach(k);
+    const pct = st.reach[k] / tot * 100;
+    h += `<div class="drow"><span>${label}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span>${pct.toFixed(1)}%</span></div>`;
+  }
+  $('dist').innerHTML = h;
+  const L = $('log');
+  if (!log.length) L.innerHTML = `<li style="display:block;color:var(--muted)">${tr().logEmpty}</li>`;
+  else L.innerHTML = log.slice(0, 30).map(e => {
+    const nm = tr().kinds[e.kind];
+    return `<li><span>#${fmt(e.n)}</span><span>${tr().stepN(e.k)}</span><span>${tr().holeN(e.hole)} <span class="tag ${e.kind}">${nm}</span>${e.reset ? tr().resetTag : ''}</span><span>+${fmt(e.pay)}</span></li>`;
+  }).join('');
+  drawLadder();
+}
+
+/* ---------- control ---------- */
+async function playOne(given) {
+  if (busy) return; busy = true;
+  const r = given || shoot();
+  await animate(r);
+  const res = settle(r);
+  SFX[res.kind]();
+  pushLog(r, res); banner(res.kind, res.pay, r.k);
+  if (res.kind === 'red') { render(); drawField(null, redPos); await new Promise(z => setTimeout(z, 4000)); }
+  if (res.reset) { await new Promise(z => setTimeout(z, (res.kind === 'jp' ? 1400 : 350) / spd())); lit.fill(false); }
+  render(); drawField(null, redPos);
+  busy = false;
+}
+async function loop() {
+  while (running) { await playOne(); await new Promise(z => setTimeout(z, 250 / spd())); }
+}
+function batch(n) {
+  running = false; $('play').textContent = tr().playStart; $('play').setAttribute('aria-pressed', 'false');
+  let last;
+  for (let i = 0; i < n; i++) { const r = shoot(); const res = settle(r); last = [r, res]; if (i >= n - 30) pushLog(r, res); if (res.reset) lit.fill(false); }
+  redPos = [...Array(N).keys()].filter(i => !lit[i])[0];
+  render(); drawField(null, redPos);
+  SFX.ok();
+}
+$('play').onclick = () => {
+  running = !running;
+  $('play').textContent = running ? tr().playStop : tr().playStart;
+  $('play').setAttribute('aria-pressed', running ? 'true' : 'false');
+  if (running) loop();
+};
+$('one').onclick = () => { if (!running) playOne(); };
+
+/* ---------- manual launch with power ---------- */
+var charging = false, power = 0, chargeT0 = 0;
+const holeFor = p => Math.round((1 - p) * (N - 1));
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function showPower() {
+  $('vfill').style.height = (power * 100) + '%';
+  $('guess').textContent = tr().guess(Math.round(power * 100), holeFor(power) + 1);
+}
+function chargeFrame(ts) {
+  if (!charging) return;
+  if (!chargeT0) chargeT0 = ts;
+  const t = ((ts - chargeT0) / 1400) % 2;
+  power = t < 1 ? t : 2 - t;
+  chargeSet(power);
+  showPower();
+  if (!busy) drawField(null, redPos);
+  requestAnimationFrame(chargeFrame);
+}
+function startCharge() {
+  if (busy || charging) return;
+  if (running) $('play').onclick();
+  charging = true; chargeT0 = 0; power = 0; $('fire').classList.add('held'); chargeStart();
+  requestAnimationFrame(chargeFrame);
+}
+function release() {
+  if (!charging) return;
+  charging = false; $('fire').classList.remove('held'); chargeStop();
+  const k = step(), empty = [...Array(N).keys()].filter(i => !lit[i]);
+  const hole = Math.random() < 0.15 ? Math.floor(Math.random() * N) : Math.max(0, Math.min(N - 1, Math.round((1 - power) * (N - 1) + gauss() * 1.7)));
+  const red = empty[Math.floor(Math.random() * empty.length)];
+  playOne({ k, hole, red, aim: holeFor(power), manual: true });
+}
+const fire = $('fire'), knob = $('knob');
+knob.addEventListener('pointerdown', e => { e.preventDefault(); knob.setPointerCapture(e.pointerId); knob.classList.add('held'); startCharge(); });
+knob.addEventListener('pointerup', () => { knob.classList.remove('held'); release(); });
+knob.addEventListener('pointercancel', () => { knob.classList.remove('held'); release(); });
+fire.addEventListener('pointerdown', e => { e.preventDefault(); fire.setPointerCapture(e.pointerId); startCharge(); });
+fire.addEventListener('pointerup', release);
+fire.addEventListener('pointercancel', release);
+fire.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); startCharge(); } });
+fire.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); release(); } });
+document.addEventListener('keydown', e => { if (e.key === ' ' && !e.repeat && e.target === document.body) { e.preventDefault(); startCharge(); } });
+document.addEventListener('keyup', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); release(); } });
+$('b1k').onclick = () => { if (!busy) batch(1000); };
+$('b10k').onclick = () => { if (!busy) batch(10000); };
+$('reset').onclick = () => {
+  if (busy) return;
+  st = { cred: 0, tix: 0, red: 0, jp: 0, miss: 0, reach: new Array(9).fill(0), games: 0 };
+  log = []; recent = []; lit.fill(false);
+  render(); drawField(null, 0);
+};
+['mult', 'skill'].forEach(id => $(id).onchange = () => $('reset').onclick());
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { LANG = b.dataset.lang; try { localStorage.setItem('tdLang', LANG); } catch (e) {} applyLang(); render(); showPower(); });
+$('snd').onclick = () => { soundOn = !soundOn; try { localStorage.setItem('tdSound', soundOn ? 'on' : 'off'); } catch (e) {} if (!soundOn) chargeStop(); else SFX.ok(); applyLang(); };
+/* unlock audio on the first tap or key press anywhere on the page */
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (soundOn) ac(); }, { passive: true }));
+applyLang(); showPower();
+render(); drawField(null, 0);
+/* red light moves one empty hole at a time, left to right, skipping green holes */
+function stepRed() {
+  for (let j = 1; j <= N; j++) { const n = (redPos + j) % N; if (!lit[n]) { redPos = n; return; } }
+}
+(function idleRed() {
+  if (!busy) { stepRed(); drawField(null, redPos); }
+  setTimeout(idleRed, 200 / spd());
+})();
+</script>
+</body>
+</html>
