@@ -351,7 +351,7 @@ function drawField(ball, redShow) {
   ctx.fillStyle = '#C8102E'; ctx.beginPath(); ctx.arc(LANE + 6, H - 2 + pull * 12, 7, 0, 7); ctx.fill();
   if (ball) {
     const bgd = ctx.createRadialGradient(ball[0] - 2.4, ball[1] - 2.4, 1, ball[0], ball[1], 8.4);
-    bgd.addColorStop(0, '#8A8A8A'); bgd.addColorStop(0.35, '#1C1C1C'); bgd.addColorStop(1, '#000000');
+    bgd.addColorStop(0, '#FFF3B0'); bgd.addColorStop(0.5, '#F2B705'); bgd.addColorStop(1, '#9C6B00');
     ctx.fillStyle = bgd; ctx.beginPath(); ctx.arc(ball[0], ball[1], 8.4, 0, 7); ctx.fill();
   }
 }
