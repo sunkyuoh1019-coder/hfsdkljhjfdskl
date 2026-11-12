@@ -280,7 +280,7 @@ function drawLadder() {
     h += `<div class="${cls}"><span>${left}</span><span>${reg}</span><span class="rv">${rv}</span></div>`;
   }
   $('ladder').innerHTML = h;
-  $('jpTop').textContent = 'BIG BONUS';
+  $('jpTop').textContent = 'BIG BONUS ' + fmt(RED[7] * m);
 }
 let bannerT;
 function banner(kind, pay, k) {
