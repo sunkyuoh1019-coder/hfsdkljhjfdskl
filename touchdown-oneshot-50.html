@@ -37,6 +37,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans K
 .topper .logo{font-size:26px;line-height:1.05}
 .topper .logo .mode{display:inline-block;vertical-align:middle;margin-left:6px;padding:3px 9px;border-radius:999px;background:#fff;color:#0E2A1B;font-size:13px;line-height:1.2;letter-spacing:0}
 .topper .crd{margin-top:6px;color:#fff;font-size:13px;font-weight:700;letter-spacing:.12em}
+.coin{display:flex;justify-content:flex-end;margin-top:28px}
 button.credit{background:#F2B705;color:#16211A;border-color:#C99400;font-weight:700}
 .topper .logo small{display:block;color:#fff;font-size:15px;letter-spacing:.2em}
 .topper .jp{display:inline-block;margin-top:8px;padding:3px 14px;border:2px solid #C8102E;border-radius:6px;color:#FF5A6E;background:#000;font-size:15px;font-variant-numeric:tabular-nums}
@@ -127,6 +128,7 @@ h2{font-size:16px;margin:18px 0 8px}
       </div>
       <div class="pfwrap"><canvas id="pf" width="440" height="330" data-i18n-aria="aPf" aria-label="플레이필드: 핀, 12개 홀, 발사 레인"></canvas><div class="vgauge" aria-hidden="true"><div class="vfill" id="vfill"></div><span class="vt">MAX</span></div></div>
       <div class="ledge"><button id="knob" class="knob" aria-label="PULL">PULL</button></div>
+      <div class="coin"><button class="credit" id="credit2"></button></div>
     </div>
   </section>
 
@@ -498,7 +500,7 @@ function render() {
 /* ---------- credits: a play needs a credit (one-shot: every ball, multi-shot: the first ball of a credit) ---------- */
 let credits = 0;
 const needCredit = () => typeof inCredit === 'undefined' || !inCredit;
-function showCredit() { $('credit').textContent = tr().creditBtn(credits); $('crdTop').textContent = 'CREDIT ' + credits; }
+function showCredit() { $('credit').textContent = $('credit2').textContent = tr().creditBtn(credits); $('crdTop').textContent = 'CREDIT ' + credits; }
 function noCredit() {
   if (running) $('play').onclick();
   const b = $('banner');
@@ -543,7 +545,7 @@ $('play').onclick = () => {
   $('play').setAttribute('aria-pressed', running ? 'true' : 'false');
   if (running) loop();
 };
-$('credit').onclick = () => { credits++; showCredit(); SFX.ok(); };
+$('credit').onclick = $('credit2').onclick = () => { credits++; showCredit(); SFX.ok(); };
 $('one').onclick = () => { if (!running) playOne(); };
 
 /* ---------- manual launch with power ---------- */
