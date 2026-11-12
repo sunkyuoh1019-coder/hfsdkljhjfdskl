@@ -35,6 +35,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans K
 .cab{background:#0E2A1B;border-radius:22px 22px 10px 10px;padding:14px 14px 18px;box-shadow:0 0 0 3px #F2B705 inset}
 .topper{text-align:center;padding:6px 0 10px;color:#F2B705;font-weight:700;letter-spacing:.02em}
 .topper .logo{font-size:26px;line-height:1.05}
+.topper .logo .mode{display:inline-block;vertical-align:middle;margin-left:6px;padding:3px 9px;border-radius:999px;background:#fff;color:#0E2A1B;font-size:13px;line-height:1.2;letter-spacing:0}
 .topper .logo small{display:block;color:#fff;font-size:15px;letter-spacing:.2em}
 .topper .jp{display:inline-block;margin-top:8px;padding:3px 14px;border:2px solid #C8102E;border-radius:6px;color:#FF5A6E;background:#000;font-size:15px;font-variant-numeric:tabular-nums}
 .monitor{position:relative;background:#06140C;border:6px solid #000;border-radius:8px;padding:10px 12px;margin:0 auto 12px;max-width:300px}
@@ -117,7 +118,7 @@ h2{font-size:16px;margin:18px 0 8px}
 <div class="wrap">
   <section data-i18n-aria="aCab" aria-label="게임기 화면">
     <div class="cab">
-      <div class="topper"><div class="logo">TOUCHDOWN<small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div></div>
+      <div class="topper"><div class="logo">TOUCHDOWN <span class="mode">Multi-Shot</span><small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div></div>
       <div class="monitor" aria-live="polite">
         <div id="ladder"></div>
         <div class="banner" id="banner"><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
@@ -159,7 +160,7 @@ h2{font-size:16px;margin:18px 0 8px}
     <div class="stats">
       <div class="stat hi"><b id="sAvg">0.0</b><span data-i18n="st1">크레딧당 평균 티켓</span></div>
       <div class="stat"><b id="sRecent">-</b><span data-i18n="st2">최근 100크레딧 평균</span></div>
-      <div class="stat"><b id="sTheory">50.0</b><span data-i18n="st3">이론 평균 (현재 설정)</span></div>
+      <div class="stat"><b id="sTheory">30.0</b><span data-i18n="st3">이론 평균 (현재 설정)</span></div>
       <div class="stat"><b id="sCred">0</b><span id="sCredF">사용 크레딧</span></div>
       <div class="stat"><b id="sTix">0</b><span data-i18n="st5">지급 티켓</span></div>
       <div class="stat"><b id="sStep">1칸</b><span data-i18n="st6">현재 도전 칸</span></div>
@@ -179,7 +180,7 @@ h2{font-size:16px;margin:18px 0 8px}
 
 <script>
 const I18N = {
- ko: { title:'Touchdown Tickets 멀티볼 시뮬레이터', lede:'1크레딧으로 볼을 여러 개 쏩니다. 볼이 빈 홀에 들어가면 티켓을 받고 한 칸 올라가며 다음 볼을 계속 쏩니다. 이미 불이 켜진 녹색 홀에 들어가거나 8번째 칸까지 마치면 크레딧이 끝납니다. 골드 보너스 라이트는 빈 홀 사이를 돌다가 볼이 들어가는 순간 판정됩니다. 점수표는 크레딧당 평균 50장(기준안)에 맞췄습니다.',
+ ko: { title:'Touchdown Tickets 멀티볼 시뮬레이터', lede:'1크레딧으로 볼을 여러 개 쏩니다. 볼이 빈 홀에 들어가면 티켓을 받고 한 칸 올라가며 다음 볼을 계속 쏩니다. 이미 불이 켜진 녹색 홀에 들어가거나 8번째 칸까지 마치면 크레딧이 끝납니다. 골드 보너스 라이트는 빈 홀 사이를 돌다가 볼이 들어가는 순간 판정됩니다. 점수표는 크레딧당 평균 30장(기준안)에 맞췄습니다.',
   one:'1볼 발사', b1k:'1,000크레딧 즉시 실행', b10k:'10,000크레딧 즉시 실행', playStart:'자동 플레이 시작', playStop:'자동 플레이 멈춤',
   launchH:'직접 발사', launchP:'발사 레인 오른쪽의 세로 게이지가 힘을 보여 줍니다. 게임기 아래의 빨간 PULL 손잡이나 아래 버튼을 누르고 있으면 게이지가 아래(약하게)에서 위(세게)로 올라갔다 내려옵니다. 세게 쏠수록 왼쪽 홀로 갑니다. 원하는 힘에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.',
   fire:'누르고 있다가 놓아서 발사', guess:(p,h)=>`힘 ${p}% · 예상 도착 ${h}번 홀 부근`,
@@ -190,9 +191,9 @@ const I18N = {
   distH:'크레딧이 끝날 때 몇 칸까지 성공했는지', reach:k=>k===8?'8번째까지':k+'칸까지', logH:'최근 기록 (크레딧-볼)', logEmpty:'자동 플레이를 시작하거나 볼을 발사하면 기록이 쌓입니다.',
   stepN:k=>k===8?'8번째':k+'칸', holeN:h=>h+'번 홀', kinds:{ok:'성공',red:'골드 보너스',jp:'잭팟',miss:'꽝',end:'8번째 종료'}, resetTag:' · 크레딧 종료',
   bOk:k=>'성공 '+k+'칸', bMiss:'GAME OVER', bEnd:'8번째 종료 · 크레딧 종료',
-  note:'한 크레딧 안에서 볼마다 그 칸의 티켓을 받고, 크레딧을 끝내는 꽝 볼은 2장입니다. 첫 볼은 모든 홀이 비어 있어 항상 성공합니다. 이론 평균은 기준안 50.0장, 순수 운 44.5장, 스킬 강함 52.4장입니다. 칸별 성공 확률은 추정값입니다. 1~4칸은 컴퓨터가 빈 홀을 노려 넣는 스킬을 반영하고(기준안 40, 40, 28, 20%), 5칸부터는 12개 홀 중 무작위로 떨어집니다. 직접 발사는 힘에 따라 노린 홀을 정하고, 핀에 튕겨 1~2칸 좌우로 흩어지며 가끔(약 15%) 먼 홀로 갑니다.',
+  note:'한 크레딧 안에서 볼마다 그 칸의 티켓을 받고, 크레딧을 끝내는 꽝 볼은 2장입니다. 첫 볼은 모든 홀이 비어 있어 항상 성공합니다. 이론 평균은 기준안 30.0장, 순수 운 26.8장, 스킬 강함 31.5장입니다. 칸별 성공 확률은 추정값입니다. 1~4칸은 컴퓨터가 빈 홀을 노려 넣는 스킬을 반영하고(기준안 40, 40, 28, 20%), 5칸부터는 12개 홀 중 무작위로 떨어집니다. 직접 발사는 힘에 따라 노린 홀을 정하고, 핀에 튕겨 1~2칸 좌우로 흩어지며 가끔(약 15%) 먼 홀로 갑니다.',
   aCab:'게임기 화면', aPf:'플레이필드: 핀, 12개 홀, 발사 레인', aPanel:'시뮬레이션 제어와 결과', sndOn:'🔊 소리 켜짐', sndOff:'🔇 소리 꺼짐' },
- en: { title:'Touchdown Tickets multi-ball simulator', lede:'One credit gives you several balls. Each ball that drops into an empty hole pays tickets, moves you up a step, and you shoot again. The credit ends when a ball lands in a green (already lit) hole or the 8th step is done. The gold bonus light steps through the empty holes and is judged the moment the ball drops in. The score table is tuned to an average of 50 tickets per credit (base case).',
+ en: { title:'Touchdown Tickets multi-ball simulator', lede:'One credit gives you several balls. Each ball that drops into an empty hole pays tickets, moves you up a step, and you shoot again. The credit ends when a ball lands in a green (already lit) hole or the 8th step is done. The gold bonus light steps through the empty holes and is judged the moment the ball drops in. The score table is tuned to an average of 30 tickets per credit (base case).',
   one:'Shoot 1 ball', b1k:'Run 1,000 credits now', b10k:'Run 10,000 credits now', playStart:'Start auto play', playStop:'Stop auto play',
   launchH:'Shoot it yourself', launchP:'The vertical gauge beside the launch lane shows your power. Hold the red PULL knob under the cabinet, or the button below, and the gauge rises from soft (bottom) to hard (top) and back. Harder shots travel further left. Let go at the power you want. The space bar works too.',
   fire:'Hold, then release to shoot', guess:(p,h)=>`Power ${p}% · aiming near hole ${h}`,
@@ -203,7 +204,7 @@ const I18N = {
   distH:'How far each credit got before it ended', reach:k=>k===8?'Through 8th':'Through '+k, logH:'Recent plays (credit-ball)', logEmpty:'Start auto play or shoot a ball to see plays here.',
   stepN:k=>k===8?'8th':'Step '+k, holeN:h=>'Hole '+h, kinds:{ok:'Success',red:'Gold bonus',jp:'Jackpot',miss:'Miss',end:'8th over'}, resetTag:' · credit over',
   bOk:k=>'Step '+k+' made', bMiss:'GAME OVER', bEnd:'8th over · credit over',
-  note:'Within a credit every ball pays that step\'s tickets, and the miss that ends the credit pays 2. The first ball always scores because every hole is empty. Theoretical averages: base case 50.0, pure luck 44.5, strong skill 52.4 tickets per credit. Step success rates are estimates: steps 1–4 include the computer aiming at an empty hole (base case 40, 40, 28, 20%), and from step 5 the ball lands at random among the 12 holes. When you shoot, power sets the hole you aim at; the pins scatter the ball by one to two holes and about 15% of shots bounce to a far hole.',
+  note:'Within a credit every ball pays that step\'s tickets, and the miss that ends the credit pays 2. The first ball always scores because every hole is empty. Theoretical averages: base case 30.0, pure luck 26.8, strong skill 31.5 tickets per credit. Step success rates are estimates: steps 1–4 include the computer aiming at an empty hole (base case 40, 40, 28, 20%), and from step 5 the ball lands at random among the 12 holes. When you shoot, power sets the hole you aim at; the pins scatter the ball by one to two holes and about 15% of shots bounce to a far hole.',
   aCab:'Game cabinet', aPf:'Playfield: pins, 12 holes, launch lane', aPanel:'Simulation controls and results', sndOn:'🔊 Sound on', sndOff:'🔇 Sound off' }
 };
 let LANG = 'ko';
@@ -219,11 +220,11 @@ function applyLang() {
   $('snd').textContent = soundOn ? tr().sndOn : tr().sndOff; $('snd').setAttribute('aria-pressed', soundOn ? 'true' : 'false');
 }
 const N = 12;
-/* multi-ball score table: tuned so the expected payout is 50.0 tickets per credit (base case) */
-const LAD = [2, 3, 6, 9, 13, 16, 22, 2];
-const RED = [15, 20, 30, 45, 60, 80, 100, 500];
+/* multi-ball score table: tuned so the expected payout is 30.0 tickets per credit (base case) */
+const LAD = [1, 2, 3, 5, 8, 10, 13, 2];
+const RED = [9, 12, 17, 25, 35, 50, 60, 300];
 const SKILL = { base: [.4, .4, .28, .2, 0, 0, 0, 0], luck: [0, 0, 0, 0, 0, 0, 0, 0], strong: [.5, .5, .4, .3, 0, 0, 0, 0] };
-const THEORY = { base: 50.0, luck: 44.5, strong: 52.4 };
+const THEORY = { base: 30.0, luck: 26.8, strong: 31.5 };
 const MISS = 2;
 
 let lit = new Array(N).fill(false);

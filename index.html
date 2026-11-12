@@ -35,6 +35,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans K
 .cab{background:#0E2A1B;border-radius:22px 22px 10px 10px;padding:14px 14px 18px;box-shadow:0 0 0 3px #F2B705 inset}
 .topper{text-align:center;padding:6px 0 10px;color:#F2B705;font-weight:700;letter-spacing:.02em}
 .topper .logo{font-size:26px;line-height:1.05}
+.topper .logo .mode{display:inline-block;vertical-align:middle;margin-left:6px;padding:3px 9px;border-radius:999px;background:#fff;color:#0E2A1B;font-size:13px;line-height:1.2;letter-spacing:0}
 .topper .logo small{display:block;color:#fff;font-size:15px;letter-spacing:.2em}
 .topper .jp{display:inline-block;margin-top:8px;padding:3px 14px;border:2px solid #C8102E;border-radius:6px;color:#FF5A6E;background:#000;font-size:15px;font-variant-numeric:tabular-nums}
 .monitor{position:relative;background:#06140C;border:6px solid #000;border-radius:8px;padding:10px 12px;margin:0 auto 12px;max-width:300px}
@@ -117,7 +118,7 @@ h2{font-size:16px;margin:18px 0 8px}
 <div class="wrap">
   <section data-i18n-aria="aCab" aria-label="게임기 화면">
     <div class="cab">
-      <div class="topper"><div class="logo">TOUCHDOWN<small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div></div>
+      <div class="topper"><div class="logo">TOUCHDOWN <span class="mode">One-Shot</span><small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div></div>
       <div class="monitor" aria-live="polite">
         <div id="ladder"></div>
         <div class="banner" id="banner"><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
