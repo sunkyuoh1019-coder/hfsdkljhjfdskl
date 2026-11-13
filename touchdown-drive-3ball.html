@@ -120,6 +120,9 @@ h2{font-size:16px;margin:18px 0 8px}
 .rgb{display:flex;gap:6px;justify-content:center;margin-top:8px}
 .rgb span{flex:1;text-align:center;padding:4px 0;border-radius:4px;border:2px solid #3A4A40;background:#0B1F13;color:#6F8076;font-size:12px;font-weight:700}
 .rgb span.on.r{background:#FF2A2A;border-color:#fff;color:#fff}.rgb span.on.g{background:#00B050;border-color:#fff;color:#fff}.rgb span.on.b{background:#00B0F0;border-color:#fff;color:#fff}
+.fball{position:absolute;left:50%;top:0;width:44px;height:28px;margin:-14px 0 0 -22px;z-index:2;pointer-events:none;transition:top .2s linear;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.fball.jump{transition:none}
+.rung.start{background:#0B1F13;color:#9FB3A6}
 .ballrow{margin-top:6px;text-align:center;color:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
 .tag.r{color:#D81E1E}.tag.g{color:#00944A}.tag.b{color:#0090C8}.tag.w{color:var(--muted)}
 .drow{grid-template-columns:92px minmax(0,1fr) 64px}
@@ -132,6 +135,7 @@ h2{font-size:16px;margin:18px 0 8px}
       <div class="topper"><div class="logo">TOUCHDOWN <span class="mode">Drive · 3 Balls</span><small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div><div class="crd" id="crdTop">CREDIT 0</div></div>
       <div class="monitor" aria-live="polite">
         <div id="ladder"></div>
+        <svg class="fball jump" id="fball" viewBox="0 0 44 28" aria-hidden="true"><ellipse cx="22" cy="14" rx="20" ry="11.5" fill="#8B4A1E" stroke="#4A2409" stroke-width="2"/><path d="M4 14 Q22 4 40 14" fill="none" stroke="#C98452" stroke-width="1.5"/><path d="M13 14 H31 M16 11 V17 M20 10.5 V17.5 M24 10.5 V17.5 M28 11 V17" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
         <div class="banner" id="banner"><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
       </div>
       <div class="pfwrap"><canvas id="pf" width="440" height="330" data-i18n-aria="aPf" aria-label="플레이필드: 핀, 11개 홀, 발사 레인"></canvas><div class="vgauge" aria-hidden="true"><div class="vfill" id="vfill"></div><span class="vt">MAX</span></div></div>
@@ -193,31 +197,31 @@ h2{font-size:16px;margin:18px 0 8px}
 
 <script>
 const I18N = {
- ko: { title:'Touchdown Tickets 드라이브 게임 시뮬레이터', lede:'럭비공의 위치는 크레딧이 끝나도 그대로 남아 다음 크레딧으로 이어집니다. 1크레딧으로 볼 3개를 쏩니다. 초록 홀은 5야드, 파랑 홀은 10야드, 빨강 홀은 20야드 전진하고, 흰 홀에 들어가면 10야드 뒤로 밀립니다(0야드 아래로는 내려가지 않습니다). 크레딧이 끝날 때마다 공이 있는 칸의 티켓을 받습니다. 160야드에 닿으면 터치다운으로 보너스 500장을 받고 공이 0야드로 돌아갑니다. 한 크레딧 안에서 초록·빨강·파랑 홀에 모두 들어가면 G+R+B 보너스 100장을 더 받습니다. 크레딧당 평균 50장(기준안)에 맞췄습니다.',
+ ko: { title:'Touchdown Tickets 드라이브 게임 시뮬레이터', lede:'럭비공의 위치는 크레딧이 끝나도 그대로 남아 다음 크레딧으로 이어집니다. 1크레딧으로 볼 3개를 쏩니다. 초록 홀은 5야드, 파랑 홀은 10야드, 빨강 홀은 20야드 전진하고, 흰 홀은 전진이 없습니다. 크레딧이 끝날 때마다 공이 있는 칸의 티켓을 받습니다. 160야드에 닿으면 터치다운으로 보너스 500장을 받고 공이 0야드로 돌아갑니다. 한 크레딧 안에서 초록·빨강·파랑 홀에 모두 들어가면 G+R+B 보너스 100장을 더 받습니다. 크레딧당 평균 50장(기준안)에 맞췄습니다.',
   creditBtn:n=>'크레딧 넣기 · 보유 '+n,
   one:'1볼 발사', b1k:'1,000크레딧 즉시 실행', b10k:'10,000크레딧 즉시 실행', playStart:'자동 플레이 시작', playStop:'자동 플레이 멈춤',
   launchH:'직접 발사', launchP:'발사 레인 오른쪽의 세로 게이지가 힘을 보여 줍니다. 게임기 아래의 빨간 PULL 손잡이나 아래 버튼을 누르고 있으면 게이지가 아래(약하게)에서 위(세게)로 올라갔다 내려옵니다. 세게 쏠수록 왼쪽 홀로 갑니다. 원하는 힘에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.',
   fire:'누르고 있다가 놓아서 발사', guess:(p,h)=>`힘 ${p}% · 예상 도착 ${h}번 홀 부근`,
   speedL:'애니메이션 속도', sp1:'보통', sp2:'빠르게', sp3:'매우 빠르게', skillL:'조준 실력 (자동 플레이)', skB:'기준안', skL:'순수 운', skS:'스킬 강함', multL:'티켓 배율',
   avgCap:'크레딧당 평균 티켓', theory:v=>`(이론값 ${v}장)`, cred:'사용 크레딧', credF:(b,a)=>`사용 크레딧 (볼 ${b}개 · 크레딧당 ${a}개)`, unit:v=>v+'장', dataH:'플레이 데이터', reset:'데이터 지우기',
-  st1:'크레딧당 평균 티켓', st2:'최근 100크레딧 평균', st3:'이론 평균 (현재 설정)', st5:'지급 티켓', st6:'현재 야드', st9:'흰 홀에 들어간 볼 (10야드 후퇴)',
+  st1:'크레딧당 평균 티켓', st2:'최근 100크레딧 평균', st3:'이론 평균 (현재 설정)', st5:'지급 티켓', st6:'현재 야드', st9:'흰 홀에 들어간 볼 (전진 없음)',
   red:'G+R+B 보너스', redF:n=>`G+R+B 보너스 (${n}크레딧에 1회)`, jp:'터치다운', jpF:n=>`터치다운 (${n}크레딧에 1회)`,
   distH:'크레딧이 끝날 때 공이 있던 칸', reach:k=>k===8?'터치다운한 크레딧':k===0?RUNGS[0]+'야드 미만':RUNGS[k-1]+'야드', logH:'최근 기록 (크레딧-볼)', logEmpty:'크레딧을 넣고 자동 플레이를 시작하거나 볼을 발사하면 기록이 쌓입니다.',
-  holeN:h=>h+'번 홀', holes:{r:'빨강 +20',g:'초록 +5',b:'파랑 +10',w:'흰색 -10'}, resetTag:' · 크레딧 종료', tdTag:' · 터치다운', rgbTag:' · G+R+B 보너스',
+  holeN:h=>h+'번 홀', holes:{r:'빨강 +20',g:'초록 +5',b:'파랑 +10',w:'흰색 +0'}, resetTag:' · 크레딧 종료', tdTag:' · 터치다운', rgbTag:' · G+R+B 보너스',
   status:(y,b,n)=>`${y} yard · BALL ${b}/${n}`,
   note:'자동 플레이는 조준 실력만큼의 확률로 색 홀 5개 중 하나에 들어가고, 나머지는 11개 홀 중 무작위로 떨어집니다(기준안 30%, 순수 운 0%, 스킬 강함 40%). 조준 실력은 추정값이고, 이 게임의 평균 배출은 이 값에 크게 좌우됩니다. 직접 발사는 힘에 따라 노린 홀을 정하고, 핀에 튕겨 좌우로 흩어지며 가끔(약 15%) 먼 홀로 갑니다. 티켓 배율이나 조준 실력을 바꾸거나 데이터를 지우면 공도 0야드로 돌아갑니다.',
   aCab:'게임기 화면', aPf:'플레이필드: 핀, 11개 홀, 발사 레인', aPanel:'시뮬레이션 제어와 결과', sndOn:'🔊 소리 켜짐', sndOff:'🔇 소리 꺼짐' },
- en: { title:'Touchdown Tickets drive game simulator', lede:'The football stays where it is when a credit ends and carries over to the next credit. One credit gives you 3 balls. A green hole moves you 5 yards, blue 10 yards and red 20 yards; a white hole pushes you back 10 yards (never below 0). At the end of every credit you get the tickets for the line the football is on. Reaching 160 yards is a touchdown: it pays a 500-ticket bonus and the football goes back to 0. Hitting the green, red and blue holes all in one credit adds the G+R+B bonus of 100 tickets. Tuned to an average of 50 tickets per credit (base case).',
+ en: { title:'Touchdown Tickets drive game simulator', lede:'The football stays where it is when a credit ends and carries over to the next credit. One credit gives you 3 balls. A green hole moves you 5 yards, blue 10 yards and red 20 yards; a white hole gains nothing. At the end of every credit you get the tickets for the line the football is on. Reaching 160 yards is a touchdown: it pays a 500-ticket bonus and the football goes back to 0. Hitting the green, red and blue holes all in one credit adds the G+R+B bonus of 100 tickets. Tuned to an average of 50 tickets per credit (base case).',
   creditBtn:n=>'Insert credit · '+n+' left',
   one:'Shoot 1 ball', b1k:'Run 1,000 credits now', b10k:'Run 10,000 credits now', playStart:'Start auto play', playStop:'Stop auto play',
   launchH:'Shoot it yourself', launchP:'The vertical gauge beside the launch lane shows your power. Hold the red PULL knob under the cabinet, or the button below, and the gauge rises from soft (bottom) to hard (top) and back. Harder shots travel further left. Let go at the power you want. The space bar works too.',
   fire:'Hold, then release to shoot', guess:(p,h)=>`Power ${p}% · aiming near hole ${h}`,
   speedL:'Animation speed', sp1:'Normal', sp2:'Fast', sp3:'Very fast', skillL:'Aiming skill (auto play)', skB:'Base case', skL:'Pure luck', skS:'Strong skill', multL:'Ticket multiplier',
   avgCap:'avg. tickets per credit', theory:v=>`(theory ${v})`, cred:'Credits played', credF:(b,a)=>`Credits played (${b} balls · ${a} per credit)`, unit:v=>v, dataH:'Play data', reset:'Clear data',
-  st1:'Avg. tickets per credit', st2:'Avg. of last 100 credits', st3:'Theoretical avg. (current settings)', st5:'Tickets paid', st6:'Current yards', st9:'Balls in a white hole (back 10 yards)',
+  st1:'Avg. tickets per credit', st2:'Avg. of last 100 credits', st3:'Theoretical avg. (current settings)', st5:'Tickets paid', st6:'Current yards', st9:'Balls in a white hole (no gain)',
   red:'G+R+B bonuses', redF:n=>`G+R+B bonuses (1 in ${n} credits)`, jp:'Touchdowns', jpF:n=>`Touchdowns (1 in ${n} credits)`,
   distH:'Where the football was when each credit ended', reach:k=>k===8?'Credits with a touchdown':k===0?'Under '+RUNGS[0]+' yd':RUNGS[k-1]+' yards', logH:'Recent plays (credit-ball)', logEmpty:'Insert a credit, then start auto play or shoot a ball to see plays here.',
-  holeN:h=>'Hole '+h, holes:{r:'Red +20',g:'Green +5',b:'Blue +10',w:'White -10'}, resetTag:' · credit over', tdTag:' · touchdown', rgbTag:' · G+R+B bonus',
+  holeN:h=>'Hole '+h, holes:{r:'Red +20',g:'Green +5',b:'Blue +10',w:'White +0'}, resetTag:' · credit over', tdTag:' · touchdown', rgbTag:' · G+R+B bonus',
   status:(y,b,n)=>`${y} yard · BALL ${b}/${n}`,
   note:'In auto play the ball goes into one of the five colored holes with a probability equal to the aiming skill, and otherwise lands at random among the 11 holes (base case 30%, pure luck 0%, strong skill 40%). The aiming skill is an estimate, and the average payout of this game depends heavily on it. When you shoot, power sets the hole you aim at; the pins scatter the ball sideways and about 15% of shots bounce to a far hole. Changing the ticket multiplier or aiming skill, or clearing the data, also puts the football back at 0.',
   aCab:'Game cabinet', aPf:'Playfield: pins, 11 holes, launch lane', aPanel:'Simulation controls and results', sndOn:'🔊 Sound on', sndOff:'🔇 Sound off' }
@@ -241,7 +245,7 @@ const HOLES = ['w', 'g', 'w', 'g', 'w', 'r', 'w', 'b', 'w', 'b', 'w'];
 const YARD = { w: 0, g: 5, r: 20, b: 10 };
 const HCOL = { r: '#FF2A2A', g: '#00B050', b: '#00B0F0' };
 const COLORED = [1, 3, 5, 7, 9];
-const BALLS = 3, GOAL = 160, BACK = 10;
+const BALLS = 3, GOAL = 160, BACK = 0; /* BACK = yards a white hole pushes the football back (0 = no push-back) */
 /* yard lines on the monitor (20 yards apart) and the tickets paid at the end of a credit for the line the football is on
    (TIX[0] = below the first line); tuned so the expected payout is 50 tickets per credit (base case) */
 const RUNGS = [20, 40, 60, 80, 100, 120, 140];
@@ -276,7 +280,7 @@ let lit = new Array(N).fill(false); /* unused in the yard game; kept so the shar
 let yards = 0, got = { r: false, g: false, b: false };
 let shown = 0; /* yards the football is drawn at on the monitor; it walks up to `yards` 5 yards at a time */
 function clearLamps() { got = { r: false, g: false, b: false }; }
-function clearField() { yards = 0; shown = 0; clearLamps(); } /* full reset; a new credit only clears the lamps */
+function clearField() { yards = 0; shown = 0; clearLamps(); const fb = document.getElementById('fball'); if (fb) fb.classList.add('jump'); } /* full reset; a new credit only clears the lamps */
 let credTD = false;
 const newStats = () => ({ cred: 0, balls: 0, tix: 0, td: 0, rgb: 0, white: 0, yardSum: 0, reach: new Array(9).fill(0), games: 0 });
 let st = newStats();
@@ -325,16 +329,28 @@ function pushLog(r, res) {
 /* ---------- monitor ---------- */
 function drawLadder() {
   const m = mult(), all = got.r && got.g && got.b, td = shown >= GOAL, cur = rung(shown);
-  let h = `<div class="rung top${td ? ' cur' : ''}"><span>${td ? '🏈 ' : ''}TOUCHDOWN</span><span class="rv">${GOAL} yard · BONUS ${fmt(TD * m)}</span></div>`;
+  let h = `<div class="rung yrow top${td ? ' cur' : ''}"><span>TOUCHDOWN</span><span class="rv">${GOAL} yard · BONUS ${fmt(TD * m)}</span></div>`;
   for (let i = TIX.length - 1; i >= 1; i--) {
-    h += `<div class="rung${i === cur ? ' cur' : ''}"><span>${fmt(TIX[i] * m)} Tickets</span><span class="fb">${i === cur ? '🏈 ' + shown : ''}</span><span class="rv">${RUNGS[i - 1]} yard</span></div>`;
+    h += `<div class="rung yrow${i === cur ? ' cur' : ''}"><span>${fmt(TIX[i] * m)} Tickets</span><span class="fb"></span><span class="rv">${RUNGS[i - 1]} yard</span></div>`;
   }
+  h += `<div class="rung yrow start"><span>START</span><span class="fb"></span><span class="rv">0 yard</span></div>`;
   h += `<div class="rgb">${['g', 'r', 'b'].map(t => `<span class="${t}${got[t] ? ' on' : ''}">${t.toUpperCase()} ${got[t] ? '✔' : YARD[t]}</span>`).join('')}</div>`;
   h += `<div class="rung${all ? ' cur' : ' top'}" style="margin-top:6px"><span>G + R + B</span><span class="rv">BONUS +${fmt(RGB * m)}</span></div>`;
-  h += `<div class="ballrow">${cur === 0 ? '🏈 ' : ''}${tr().status(Math.min(shown, GOAL), ballNo, BALLS)}</div>`;
+  h += `<div class="ballrow">${tr().status(Math.min(shown, GOAL), ballNo, BALLS)}</div>`;
   $('ladder').innerHTML = h;
   $('jpTop').textContent = 'TOUCHDOWN ' + fmt(TD * m);
+  placeBall();
 }
+/* put the football on the yard lines: START row = 0 yards, TOUCHDOWN row = GOAL, evenly spaced rows between */
+function placeBall() {
+  const fb = $('fball'), rows = document.querySelectorAll('#ladder .yrow');
+  if (!rows.length) return;
+  const mon = fb.parentElement.getBoundingClientRect();
+  const cy = el => { const r = el.getBoundingClientRect(); return r.top + r.height / 2 - mon.top - fb.parentElement.clientTop; };
+  const top = cy(rows[0]), bot = cy(rows[rows.length - 1]);
+  fb.style.top = (bot + (top - bot) * Math.min(shown, GOAL) / GOAL) + 'px';
+}
+addEventListener('resize', placeBall);
 let bannerT;
 function banner(kind, pay, res) {
   const b = $('banner');
@@ -404,7 +420,7 @@ function drawField(ball, redShow) {
     ctx.fillStyle = '#0A0F0C'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 12, 0, 7); ctx.fill();
     if (hit) { const gl = ctx.createRadialGradient(x, HOLE_Y, 2, x, HOLE_Y, 18); gl.addColorStop(0, on); gl.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, HOLE_Y, 18, 0, 7); ctx.fill(); }
     ctx.fillStyle = on || '#F2F2F2'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 8.5, 0, 7); ctx.fill();
-    if (!on) { ctx.fillStyle = '#7A1420'; ctx.font = 'bold 8px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('-' + BACK, x, HOLE_Y + 0.5); ctx.textBaseline = 'alphabetic'; }
+    if (!on && BACK) { ctx.fillStyle = '#7A1420'; ctx.font = 'bold 8px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('-' + BACK, x, HOLE_Y + 0.5); ctx.textBaseline = 'alphabetic'; }
     if (hit) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, HOLE_Y, 11.5, 0, 7); ctx.stroke(); }
     if (on) { ctx.fillStyle = '#fff'; ctx.font = 'bold 9px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(YARD[HOLES[i]], x, HOLE_Y + 0.5); ctx.textBaseline = 'alphabetic'; }
   }
@@ -568,7 +584,7 @@ function takeCredit() {
 }
 /* the football walks from where it is, 5 yards at a time, forward or back */
 async function moveBall(to) {
-  drawLadder();
+  $('fball').classList.remove('jump'); drawLadder();
   while (shown !== to) {
     shown += shown < to ? 5 : -5; drawLadder();
     if (spd() < 8) SFX.chase();
@@ -587,7 +603,7 @@ async function playOne(given) {
   await moveBall(res.td ? GOAL : res.yards);
   SFX[res.kind]();
   if (res.kind !== 'ok') banner(res.kind, res.pay, res);
-  if (res.td) { render(); await pause(1800); shown = 0; drawLadder(); }
+  if (res.td) { render(); await pause(1800); shown = 0; $('fball').classList.add('jump'); drawLadder(); }
   if (res.reset) { shown = yards; render(); await pause(1200); clearLamps(); ballNo = 0; }
   shown = yards;
   render(); drawField(null, redPos);
@@ -601,7 +617,7 @@ function batch(n) {
   let last;
   let done = 0;
   while (done < n || inCredit) { const r = shoot(); const res = settle(r); last = [r, res]; pushLog(r, res); if (res.reset) { clearLamps(); ballNo = 0; done++; } }
-  redPos = 0; shown = yards;
+  redPos = 0; shown = yards; $('fball').classList.add('jump');
   render(); drawField(null, redPos);
   SFX.ok();
 }
