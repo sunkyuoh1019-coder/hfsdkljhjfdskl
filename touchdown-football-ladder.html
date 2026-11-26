@@ -528,6 +528,7 @@ function drawLadder() {
   $('ladder').innerHTML = h;
   $('jpTop').textContent = 'BIG BONUS ' + fmt(BIG * m);
 }
+const RESULT_EXTRA_MS = 2000; /* how much longer a result stays on screen */
 let bannerT;
 function banner(res) {
   const b = $('banner'), t = tr(), rb = res.lamp === 'rb', sit = res.after.phase === 'drive' ? t.bChance(res.after.down) : '';
@@ -541,7 +542,7 @@ function banner(res) {
   $('b1').textContent = x[0]; $('b2').textContent = x[1];
   b.className = 'banner show ' + x[2];
   clearTimeout(bannerT);
-  bannerT = setTimeout(() => b.className = 'banner ' + x[2], res.end ? 2400 : 1100 / spd() + 500);
+  bannerT = setTimeout(() => b.className = 'banner ' + x[2], (res.end ? 2400 : 1100 / spd() + 500) + RESULT_EXTRA_MS);
 }
 function ytgText() { return G.dist <= FIRST - G.series ? 'Goal' : ytgOf(G); }
 
@@ -784,6 +785,7 @@ async function playOne(given) {
   SFX[SFXK[res.kind]]();
   if (res.end) lastTitle = res.kind;
   banner(res); render(); drawField(null, redPos);
+  await new Promise(z => setTimeout(z, RESULT_EXTRA_MS)); /* keep the result on screen 2 seconds longer */
   if (res.end) { await pause(res.kind === 'jp' ? 2400 : 1800); newGame(); }
   else if (res.kind === 'first' || res.kind === 'td' || res.fgOpen) await pause(700);
   render(); drawField(null, redPos);
