@@ -127,20 +127,38 @@ h2{font-size:16px;margin:18px 0 8px}
 .tag.r{color:#D81E1E}.tag.g{color:#00944A}.tag.b{color:#0090C8}.tag.w{color:var(--muted)}
 .drow{grid-template-columns:92px minmax(0,1fr) 64px}
 .settings{grid-template-columns:repeat(2,minmax(0,1fr))}
-.mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:#fff;font-size:12px;font-weight:700}
-.mh .big2{font-size:26px;line-height:1.1;color:#F2B705}
-.fld{position:relative;height:30px;margin:8px 0 2px;border-radius:5px;border:2px solid #fff;overflow:hidden;background:repeating-linear-gradient(90deg,#14502C 0 10%,#1B6637 10% 20%)}
-.fld .zone{position:absolute;right:0;top:0;bottom:0;width:10%;background:rgba(200,16,46,.55)}
-.fld .gl{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:#F2B705;transition:left .5s ease}
-.fld .ball{position:absolute;top:50%;font-size:20px;line-height:1;transform:translate(-50%,-50%);transition:left .6s ease}
-.fl{display:flex;justify-content:space-between;color:#9FB3A6;font-size:10px;font-weight:700;letter-spacing:.04em}
-.legend{display:flex;gap:4px;margin-top:8px}
-.chip{flex:1;text-align:center;padding:4px 0;border-radius:4px;border:2px solid #3A4A40;background:#0B1F13;color:#8FA196;font-size:11px;font-weight:700;line-height:1.2}
-.chip.b{background:#00B0F0;color:#04202E;border-color:#fff}.chip.g{background:#00B050;color:#032612;border-color:#fff}.chip.y{background:#FFD400;color:#3A3000;border-color:#fff}.chip.r{background:#FF2A2A;color:#fff;border-color:#fff}
-.chip.rb{background:linear-gradient(90deg,#f33,#fc0,#3c3,#3cf,#93f);color:#fff;border-color:#fff}
-.chip.off{opacity:.4}
-.score{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;text-align:center;color:#9FB3A6;font-size:10px;font-weight:700}
-.score b{display:block;font-size:18px;line-height:1.2;color:#F2B705;font-variant-numeric:tabular-nums}
+.banner .b1{font-size:19px}
+.chance{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff}
+.chance .cl{font-size:12px;font-weight:700;color:#9FB3A6}
+.chance .cn{font-size:12px;font-weight:700;color:#F2B705}
+.balls{display:flex;gap:4px;margin:4px 0 2px}
+.balls i{flex:1;text-align:center;font-style:normal;font-size:20px;line-height:1.5;border-radius:6px;background:#14502C;border:2px solid #1E7A3E}
+.balls i.cur{background:#F2B705;border-color:#fff;box-shadow:0 0 8px #F2B705}
+.balls i.used{opacity:.25;filter:grayscale(1)}
+.msg{margin:6px 0 2px;text-align:center;color:#fff;font-size:13px;font-weight:700;line-height:1.35}
+.msg b{color:#F2B705;font-size:17px}
+.field{position:relative;height:68px;margin-top:6px;border-radius:6px;border:2px solid #fff;overflow:hidden;background:#14502C}
+.field .tk{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.22)}
+.field .ez{position:absolute;right:0;top:0;bottom:0;width:12%;display:flex;align-items:center;justify-content:center;background:rgba(200,16,46,.75);border-left:2px solid #fff;color:#fff;font-size:10px;font-weight:700}
+.field .ez span{writing-mode:vertical-rl}
+.field .gl{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #F2B705;transition:left .5s ease}
+.field .flag{position:absolute;top:3px;transform:translateX(-50%);text-align:center;font-size:18px;line-height:1;transition:left .5s ease}
+.field .ball{position:absolute;bottom:3px;transform:translateX(-50%);text-align:center;font-size:24px;line-height:1;transition:left .6s ease}
+.field em{display:block;font-style:normal;font-size:10px;font-weight:700;margin-top:2px;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap}
+.field .flag em{color:#FFD45C}
+.fl2{display:flex;justify-content:space-between;margin-top:3px;color:#9FB3A6;font-size:10px;font-weight:700}
+.tip{margin-top:8px;text-align:center;color:#9FB3A6;font-size:11px}
+.legend{display:flex;gap:4px;margin-top:4px}
+.chip{flex:1;text-align:center;padding:5px 0;border-radius:6px;border:2px solid #3A4A40;background:#0B1F13;color:#8FA196;font-size:12px;font-weight:700;line-height:1.25}
+.chip small{display:block;font-size:11px;font-weight:700}
+.chip.b{background:#00B0F0;color:#04202E;border-color:#fff}.chip.g{background:#00B050;color:#032612;border-color:#fff}.chip.y{background:#FFD400;color:#3A3000;border-color:#fff}
+.chip.rb{background:linear-gradient(90deg,#f33,#fc0,#3c3,#3cf,#93f);color:#fff;border-color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.chip.off{opacity:.35}
+.call{margin-top:8px;padding:10px 8px;border-radius:8px;text-align:center;color:#fff;background:#7A1420;border:2px solid #fff;font-size:12px;font-weight:700;line-height:1.35}
+.call b{display:block;font-size:20px}
+.res{margin-top:6px;text-align:center;color:#F2B705;font-size:24px;font-weight:700}
+.score{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px;text-align:center;color:#9FB3A6;font-size:11px;font-weight:700}
+.score b{display:block;font-size:20px;line-height:1.2;color:#F2B705;font-variant-numeric:tabular-nums}
 .video{margin-top:6px;text-align:center;color:#9FB3A6;font-size:11px}
 .tag.gain,.tag.first{color:var(--turf)}.tag.fail,.tag.over{color:var(--muted)}.tag.td,.tag.td6,.tag.jp{color:#B07F00}.tag.fg{color:var(--red)}
 </style>
@@ -227,6 +245,13 @@ const I18N = {
   red:'터치다운', redF:n=>`터치다운 (${n}크레딧에 1회)`, jp:'JP 당첨', jpF:n=>`JP 당첨 (${n}크레딧에 1회)`,
   distH:'게임이 어떻게 끝났는지', reach:k=>['GAME OVER (무득점)','필드골 3점','터치다운 6점','터치다운 + JP 7점'][k], logH:'최근 기록 (크레딧-볼)', logEmpty:'크레딧을 넣고 자동 플레이를 시작하거나 볼을 발사하면 기록이 쌓입니다.',
   holeN:h=>h+'번 홀', ballOf:n=>'BALL '+n, redHoles:n=>'빨간 홀 '+n+'개', video:'비디오',
+  mChance:'공격 기회', mChanceN:d=>d+'번째 / 4번', mNeed:y=>`<b>${y}야드</b> 더 가면 기회가 4번으로 새로 시작!`, mGoal:y=>`터치다운까지 <b>${y}야드</b>!`,
+  mTip:'불 켜진 홀에 넣으면 전진! 꺼진 홀은 실패!', mBlue:'파랑', mGreen:'초록', mYellow:'노랑', mRainbow:'무지개', mYd:s=>s+'야드', mYdUp:'+10야드↑',
+  mHere:'현재', mTarget:'목표', mOwn:'우리 골라인', mToGoal:y=>`터치다운까지 ${y}야드`, mTDzone:'터치다운',
+  mFG:'필드골 찬스!', mFGsub:'빨간 홀에 넣으면 3점', mJPc:'터치다운! 6점', mJPsub:'빨간 홀에 넣으면 +1점 & JP', mPts:'점수', mTix:'받은 티켓', mJPl:'JP 잭팟', mPer:n=>`1점 = ${n}장`, mVideo:'비디오 진행',
+  mResult:{ over:'GAME OVER', fg:'필드골 성공!', td6:'터치다운!', jp:'터치다운 + JP!' },
+  bGain:(y,rb)=>(rb?'무지개! ':'')+'+'+y+'야드 전진', bFirst:rb=>(rb?'무지개! ':'')+'새 공격 기회!', bFirstSub:y=>'+'+y+'야드', bChance:d=>'공격 기회 '+d+'/4',
+  bFail:{ 'BLOCKED':'BLOCKED 막혔다!', 'OUT OF BOUNDS':'OUT OF BOUNDS 라인 밖!', 'FUMBLE':'FUMBLE 공을 놓쳤다!' }, bTD:'터치다운!', bTDsub:'+6점 · JP 찬스', bOver:'GAME OVER', bNoGood:'필드골 실패', bFG:'필드골 성공!', bTD6:'터치다운!', bJP:'JP 당첨!',
   note:'점수는 1점 = '+25+'장이고, JP는 시작 '+50+'장에서 크레딧마다 '+8+'장씩 쌓이는 프로그레시브입니다(당첨되면 초기화). 이 숫자들과 위의 확률은 모두 조정용 추정값입니다. 자동 플레이는 조준 실력만큼의 확률로 불 켜진 홀을 노리고, 그 외에는 무작위로 떨어지며 오른쪽 홀일수록 덜 들어갑니다(기준안 35%, 순수 운 0%, 스킬 강함 50%). 램프 개수와 위치는 매 볼마다 바뀌고, 필요한 야드가 많거나(8야드 이상) 적을 때(3야드 이하)는 개수가 달라집니다. 비디오로 진행하는 다운은 플레이어 볼과 같은 확률로 야드가 정해져서, One~Four Tries 옵션은 평균 티켓을 바꾸지 않고 플레이 시간만 줄입니다.',
   aCab:'게임기 화면', aPf:'플레이필드: 핀, 12개 홀, 발사 레인', aPanel:'시뮬레이션 제어와 결과', sndOn:'🔊 소리 켜짐', sndOff:'🔇 소리 꺼짐' },
  en: { title:'Touchdown Tickets football game simulator', lede:'American football turned into a pinball game. You start 40 to 60 yards from the goal line (sometimes a very short special chance) and get four downs to gain 10 yards, which earns a new 1st Down. A ball in a lit hole gains 10 yards (blue), 5 (green) or 1 to 2 (yellow); an occasional rainbow lamp sweeps quickly left and right and is worth 10+ yards (random). A hole that is not lit is a failure (BLOCKED, OUT OF BOUNDS, FUMBLE). Four downs without 10 yards is GAME OVER. Reaching the goal line is a 6-point touchdown, and a ball in one of the 6 red holes in the middle adds 1 point and the JP. On 4th down, if you are within 40 yards of the goal and gained under 5 yards on this series, you get a field goal try (4 to 6 red holes, 3 points).',
@@ -241,6 +266,13 @@ const I18N = {
   red:'Touchdowns', redF:n=>`Touchdowns (1 in ${n} credits)`, jp:'JP wins', jpF:n=>`JP wins (1 in ${n} credits)`,
   distH:'How each game ended', reach:k=>['GAME OVER (no score)','Field goal, 3 pts','Touchdown, 6 pts','Touchdown + JP, 7 pts'][k], logH:'Recent plays (credit-ball)', logEmpty:'Insert a credit, then start auto play or shoot a ball to see plays here.',
   holeN:h=>'Hole '+h, ballOf:n=>'BALL '+n, redHoles:n=>n+' red holes', video:'VIDEO',
+  mChance:'Chances left', mChanceN:d=>'try '+d+' of 4', mNeed:y=>`Gain <b>${y} more yards</b> to get 4 fresh tries!`, mGoal:y=>`<b>${y} yards</b> to the touchdown!`,
+  mTip:'Lit hole = move forward. Unlit hole = miss.', mBlue:'Blue', mGreen:'Green', mYellow:'Yellow', mRainbow:'Rainbow', mYd:s=>s+' yd', mYdUp:'+10 yd or more',
+  mHere:'You', mTarget:'Goal', mOwn:'Your goal line', mToGoal:y=>`${y} yards to the touchdown`, mTDzone:'TOUCH DOWN',
+  mFG:'Field goal chance!', mFGsub:'A ball in a red hole scores 3 points', mJPc:'Touchdown! 6 points', mJPsub:'A ball in a red hole adds +1 point and the JP', mPts:'Points', mTix:'Tickets won', mJPl:'JP jackpot', mPer:n=>`1 point = ${n} tickets`, mVideo:'Played by video',
+  mResult:{ over:'GAME OVER', fg:'Field goal is good!', td6:'Touchdown!', jp:'Touchdown + JP!' },
+  bGain:(y,rb)=>(rb?'Rainbow! ':'')+'+'+y+' yards', bFirst:rb=>(rb?'Rainbow! ':'')+'New set of tries!', bFirstSub:y=>'+'+y+' yd', bChance:d=>'Try '+d+' of 4',
+  bFail:{ 'BLOCKED':'BLOCKED!', 'OUT OF BOUNDS':'OUT OF BOUNDS!', 'FUMBLE':'FUMBLE!' }, bTD:'TOUCHDOWN!', bTDsub:'+6 points · JP chance', bOver:'GAME OVER', bNoGood:'Field goal missed', bFG:'FIELD GOAL!', bTD6:'TOUCHDOWN!', bJP:'JACKPOT!',
   note:'1 point = '+25+' tickets, and the JP is a progressive that starts at '+50+' and grows by '+8+' per credit (it resets when won). These numbers and the odds above are all adjustable estimates. In auto play the ball is aimed at a lit hole with a probability equal to the aiming skill and otherwise lands at random, with the right-hand holes catching fewer balls (base case 35%, pure luck 0%, strong skill 50%). The number and position of the lamps change on every ball, and the count differs when many yards are needed (8 or more) or few (3 or fewer). Downs played by video use the same odds as a player ball, so the One to Four Tries option shortens play without changing the average tickets.',
   aCab:'Game cabinet', aPf:'Playfield: pins, 12 holes, launch lane', aPanel:'Simulation controls and results', sndOn:'🔊 Sound on', sndOff:'🔇 Sound off' }
 };
@@ -430,37 +462,43 @@ function pushLog(r, res) {
 function drawLadder() {
   const g = G, m = mult(), t = tr();
   let h = '';
-  if (g.done) h += `<div class="mh"><span class="big2">${lastTitle || 'GAME OVER'}</span></div>`;
-  else if (g.phase === 'drive') h += `<div class="mh"><span class="big2">${ORD[g.down]} &amp; ${g.dist <= FIRST - g.series ? 'Goal' : ytgOf(g)}</span><span>${t.ballOf(ballNo + 1)}</span></div>`;
-  else if (g.phase === 'fg') h += `<div class="mh"><span class="big2">FIELD GOAL</span><span>${t.redHoles(fgHoles(g.dist))}</span></div>`;
-  else h += `<div class="mh"><span class="big2">TOUCHDOWN +1</span><span>JP CHANCE</span></div>`;
-  const pos = 100 - g.dist, fd = Math.min(100, pos + (g.phase === 'drive' && !g.done ? ytgOf(g) : 0));
-  h += `<div class="fld"><div class="zone"></div>${g.phase === 'drive' && !g.done ? `<div class="gl" style="left:${fd}%"></div>` : ''}<span class="ball" style="left:${Math.max(3, Math.min(96, pos))}%">🏈</span></div>`;
-  h += `<div class="fl"><span>OWN GOAL</span><span>${g.dist} YD TO GOAL</span><span>GOAL</span></div>`;
+  if (g.done) h += `<div class="res">${t.mResult[lastTitle] || t.mResult.over}</div>`;
   if (g.phase === 'drive' && !g.done) {
-    const c = counts(ytgOf(g));
-    h += `<div class="legend"><span class="chip b">BLUE<br>+10 ×${c.b}</span><span class="chip g">GREEN<br>+5 ×${c.g}</span><span class="chip y">YELLOW<br>+1~2 ×${c.y}</span><span class="chip rb${g.rainbow ? '' : ' off'}">RAINBOW<br>10+</span></div>`;
-  } else if (!g.done) h += `<div class="legend"><span class="chip r">${g.phase === 'fg' ? 'RED = FIELD GOAL +3' : 'RED = +1 &amp; JP'}</span></div>`;
-  h += `<div class="score"><div><b>${g.pts}</b>POINTS</div><div><b>${fmt(credTix)}</b>TICKETS</div><div><b>${fmt(jp * m)}</b>JP</div></div>`;
-  if (g.tries < DOWNS && g.autoLog.length) h += `<div class="video">${t.video}: ${g.autoLog.slice(-3).map(a => ORD[a.down] + ' +' + a.gain).join(' · ')}</div>`;
-  h += `<div class="video">1 POINT = ${fmt(TPP * m)} TICKETS</div>`;
+    const dots = [1, 2, 3, 4].map(d => `<i class="${d < g.down ? 'used' : d === g.down ? 'cur' : ''}">🏈</i>`).join('');
+    h += `<div class="chance"><span class="cl">${t.mChance}</span><span class="cn">${t.mChanceN(g.down)}</span></div><div class="balls">${dots}</div>`;
+    h += `<div class="msg">${g.dist <= FIRST - g.series ? t.mGoal(g.dist) : t.mNeed(ytgOf(g))}</div>`;
+  } else if (g.phase === 'fg' && !g.done) h += `<div class="call"><b>${t.mFG}</b>${t.mFGsub}</div>`;
+  else if (g.phase === 'jp' && !g.done) h += `<div class="call"><b>${t.mJPc}</b>${t.mJPsub}</div>`;
+  const W = 88; /* the playing field is the left 88% of the bar and the end zone is the rest */
+  const pos = 100 - g.dist, fd = Math.min(100, pos + (g.phase === 'drive' && !g.done ? ytgOf(g) : 0));
+  const ticks = [10, 20, 30, 40, 50, 60, 70, 80, 90].map(v => `<span class="tk" style="left:${v * W / 100}%"></span>`).join('');
+  h += `<div class="field">${ticks}<div class="ez"><span>${t.mTDzone}</span></div>`;
+  if (g.phase === 'drive' && !g.done && fd > pos) h += `<span class="gl" style="left:${fd * W / 100}%"></span><span class="flag" style="left:${fd * W / 100}%">🚩<em>${t.mTarget}</em></span>`;
+  h += `<span class="ball" style="left:${Math.max(4, Math.min(pos * W / 100, 86))}%">🏈<em>${t.mHere}</em></span></div>`;
+  h += `<div class="fl2"><span>${t.mOwn}</span><span>${t.mToGoal(g.dist)}</span></div>`;
+  if (g.phase === 'drive' && !g.done) {
+    h += `<div class="tip">${t.mTip}</div><div class="legend"><span class="chip b">${t.mBlue}<small>${t.mYd('+10')}</small></span><span class="chip g">${t.mGreen}<small>${t.mYd('+5')}</small></span><span class="chip y">${t.mYellow}<small>${t.mYd('+1~2')}</small></span><span class="chip rb${g.rainbow ? '' : ' off'}">${t.mRainbow}<small>${t.mYdUp}</small></span></div>`;
+  }
+  h += `<div class="score"><div><b>${g.pts}</b>${t.mPts}</div><div><b>${fmt(credTix)}</b>${t.mTix}</div><div><b>${fmt(jp * m)}</b>${t.mJPl}</div></div>`;
+  if (g.tries < DOWNS && g.autoLog.length) h += `<div class="video">${t.mVideo}: ${g.autoLog.slice(-3).map(a => t.mChanceN(a.down).split(' ')[0] + ' +' + a.gain).join(' · ')}</div>`;
+  h += `<div class="video">${t.mPer(fmt(TPP * m))}</div>`;
   $('ladder').innerHTML = h;
   $('jpTop').textContent = 'JP ' + fmt(jp * m);
 }
 let bannerT;
 function banner(res) {
-  const b = $('banner'), rb = res.lamp === 'rb' ? 'RAINBOW ' : '', sit = res.after.phase === 'drive' ? ORD[res.after.down] + ' & ' + ytgText() : '';
+  const b = $('banner'), t = tr(), rb = res.lamp === 'rb', sit = res.after.phase === 'drive' ? t.bChance(res.after.down) : '';
   const tbl = {
-    gain: [rb + '+' + res.gain + ' YARDS', sit, 'ok'], first: [rb + 'FIRST DOWN!', '+' + res.gain + ' YD', 'ok'],
-    fail: [res.msg, sit, 'miss'], td: ['TOUCHDOWN!', '+6 · JP CHANCE', 'jp'],
-    over: [res.msg || 'GAME OVER', res.pay ? '+' + fmt(res.pay) : '0', 'end'], fg: ['FIELD GOAL!', '+' + fmt(res.pay), 'red'],
-    td6: ['TOUCHDOWN', '+' + fmt(res.pay), 'jp'], jp: ['JACKPOT!', '+' + fmt(res.pay), 'jp']
+    gain: [t.bGain(res.gain, rb), sit, 'ok'], first: [t.bFirst(rb), t.bFirstSub(res.gain), 'ok'],
+    fail: [t.bFail[res.msg] || res.msg, sit, 'miss'], td: [t.bTD, t.bTDsub, 'jp'],
+    over: [res.msg === 'NO GOOD' ? t.bNoGood : t.bOver, res.pay ? '+' + fmt(res.pay) : '0', 'end'], fg: [t.bFG, '+' + fmt(res.pay), 'red'],
+    td6: [t.bTD6, '+' + fmt(res.pay), 'jp'], jp: [t.bJP, '+' + fmt(res.pay), 'jp']
   };
-  const t = tbl[res.kind];
-  $('b1').textContent = t[0]; $('b2').textContent = t[1];
-  b.className = 'banner show ' + t[2];
+  const x = tbl[res.kind];
+  $('b1').textContent = x[0]; $('b2').textContent = x[1];
+  b.className = 'banner show ' + x[2];
   clearTimeout(bannerT);
-  bannerT = setTimeout(() => b.className = 'banner ' + t[2], res.end ? 2400 : 1100 / spd() + 500);
+  bannerT = setTimeout(() => b.className = 'banner ' + x[2], res.end ? 2400 : 1100 / spd() + 500);
 }
 function ytgText() { return G.dist <= FIRST - G.series ? 'Goal' : ytgOf(G); }
 
@@ -653,7 +691,7 @@ function render() {
   $('sAvg').textContent = st.cred ? t.unit((st.tix / st.cred).toFixed(1)) : '0.0';
   $('sRecent').textContent = recent.length ? t.unit((recent.reduce((a, b) => a + b, 0) / recent.length).toFixed(1)) : '-';
   $('sTheory').textContent = t.unit((THEORY[sk] * mult()).toFixed(1));
-  $('sStep').textContent = G.done ? '-' : G.phase === 'drive' ? ORD[G.down] + ' & ' + ytgText() : G.phase === 'fg' ? 'FG' : 'JP';
+  $('sStep').textContent = G.done ? '-' : G.phase === 'drive' ? t.mChanceN(G.down) : G.phase === 'fg' ? 'FG' : 'JP';
   $('sRed').textContent = fmt(st.td); $('sRedF').textContent = st.td ? t.redF(Math.round(st.games / st.td)) : t.red;
   $('sJp').textContent = fmt(st.jp); $('sJpF').textContent = st.jp ? t.jpF(Math.round(st.games / st.jp)) : t.jp;
   $('sMiss').textContent = fmt(st.reach[0]) + (st.games ? ' (' + (st.reach[0] / st.games * 100).toFixed(0) + '%)' : '');
@@ -666,7 +704,7 @@ function render() {
   const L = $('log');
   if (!log.length) L.innerHTML = `<li style="display:block;color:var(--muted)">${t.logEmpty}</li>`;
   else L.innerHTML = log.slice(0, 30).map(e => {
-    return `<li><span>#${e.n}</span><span>${ORD[e.down]} &amp; ${e.ytg}</span><span>${t.holeN(e.hole)} <span class="tag ${e.kind}">${logDesc(e)}</span></span><span>${e.end ? '+' + fmt(e.pay) : ''}</span></li>`;
+    return `<li><span>#${e.n}</span><span>${t.mChanceN(e.down).split(' ')[0]}</span><span>${t.holeN(e.hole)} <span class="tag ${e.kind}">${logDesc(e)}</span></span><span>${e.end ? '+' + fmt(e.pay) : ''}</span></li>`;
   }).join('');
   drawLadder();
 }
@@ -701,7 +739,7 @@ async function playOne(given) {
   const res = settle(r);
   pushLog(r, res);
   SFX[SFXK[res.kind]]();
-  if (res.end) lastTitle = res.kind === 'jp' ? 'TOUCHDOWN + JP' : res.kind === 'td6' ? 'TOUCHDOWN' : res.kind === 'fg' ? 'FIELD GOAL GOOD' : 'GAME OVER';
+  if (res.end) lastTitle = res.kind;
   banner(res); render(); drawField(null, redPos);
   if (res.end) { await pause(res.kind === 'jp' ? 2400 : 1800); newGame(); }
   else if (res.kind === 'first' || res.kind === 'td' || res.fgOpen) await pause(700);
