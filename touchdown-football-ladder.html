@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Touchdown Tickets 풋볼 사다리 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3EF; --surface:#FFFFFF; --ink:#16211A; --muted:#56665C; --line:#D3DDD6;
+  --turf:#1E7A3E; --deep:#0E2A1B; --gold:#F2B705; --red:#C8102E; --btn:#0E2A1B; --btn-ink:#FFFFFF;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B140F; --surface:#13201A; --ink:#E6EFE9; --muted:#9AAEA2; --line:#284034;
+    --turf:#3FA864; --deep:#0E2A1B; --gold:#F5C53A; --red:#F0485E; --btn:#F5C53A; --btn-ink:#14201A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B140F; --surface:#13201A; --ink:#E6EFE9; --muted:#9AAEA2; --line:#284034;
+  --turf:#3FA864; --deep:#0E2A1B; --gold:#F5C53A; --red:#F0485E; --btn:#F5C53A; --btn-ink:#14201A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 48px;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+/* Cabinet */
+.cab{background:#0E2A1B;border-radius:22px 22px 10px 10px;padding:14px 14px 18px;box-shadow:0 0 0 3px #F2B705 inset}
+.topper{text-align:center;padding:6px 0 10px;color:#F2B705;font-weight:700;letter-spacing:.02em}
+.topper .logo{font-size:26px;line-height:1.05}
+.topper .logo .mode{display:inline-block;vertical-align:middle;margin-left:6px;padding:3px 9px;border-radius:999px;background:#fff;color:#0E2A1B;font-size:13px;line-height:1.2;letter-spacing:0}
+.topper .crd{margin-top:6px;color:#fff;font-size:13px;font-weight:700;letter-spacing:.12em}
+.coin{display:flex;justify-content:flex-end;margin-top:28px}
+button.credit{background:#F2B705;color:#16211A;border-color:#C99400;font-weight:700}
+.topper .logo small{display:block;color:#fff;font-size:15px;letter-spacing:.2em}
+.topper .jp{display:inline-block;margin-top:8px;padding:3px 14px;border:2px solid #C8102E;border-radius:6px;color:#FF5A6E;background:#000;font-size:15px;font-variant-numeric:tabular-nums}
+.monitor{position:relative;background:#06140C;border:6px solid #000;border-radius:8px;padding:10px 12px;margin:0 auto 12px;max-width:300px}
+.rung{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:6px;padding:4px 10px;margin:3px 0;border-radius:4px;background:#14502C;color:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.rung.top{background:#6B4E00}
+.rung.cur{background:#F2B705;color:#16211A}
+.rung .rv{color:#FFD45C;font-size:12px}
+.rung.cur .rv{color:#6B4300}
+.banner{position:absolute;inset:30% 8%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-weight:700;text-align:center;opacity:0;transform:scale(.92);transition:opacity .15s,transform .15s;pointer-events:none}
+.banner.show{opacity:1;transform:scale(1)}
+.banner .b1{font-size:24px;line-height:1.1}.banner .b2{font-size:30px;font-variant-numeric:tabular-nums}
+.banner.ok{background:#1E7A3E;color:#fff}.banner.rgb,.banner.red{background:#1A1300;color:#FFC21A;box-shadow:0 0 0 3px #F2B705}
+.banner.jp{background:#F2B705;color:#16211A;box-shadow:0 0 0 3px #fff}.banner.miss{background:#7A1420;color:#fff}.banner.end{background:#2B2B2B;color:#fff}
+canvas{display:block;width:100%;height:auto;border-radius:6px;background:#1E7A3E}
+.ledge{position:relative;height:16px;background:#F2B705;border-radius:6px;margin-top:8px}
+.cab{padding-bottom:30px}
+.pfwrap{display:flex;gap:6px;align-items:stretch}
+.pfwrap canvas{flex:1;min-width:0}
+.vgauge{position:relative;width:20px;flex:none;border-radius:10px;background:#06140C;border:2px solid #F2B705;overflow:hidden}
+.vfill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(0deg,#DCE7DF,#F2B705 55%,#C8102E)}
+.vt{position:absolute;top:3px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;color:#fff}
+.knob{position:absolute;right:-2px;top:-12px;width:46px;height:46px;padding:0;border-radius:50%;background:#C8102E;color:#fff;border:3px solid #fff;font-size:11px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 3px 0 #7A0012}
+.knob.held{transform:translateY(4px);box-shadow:0 0 0 #7A0012;background:#A00018}
+/* Panel */
+h1{font-size:24px;line-height:1.25;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 18px;max-width:60ch}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+button{font:inherit;font-size:14px;border-radius:999px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--btn);color:var(--btn-ink);border-color:var(--btn);font-weight:700}
+button[aria-pressed="true"]{background:var(--turf);color:#fff;border-color:var(--turf)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}
+@media (max-width:560px){.settings{grid-template-columns:1fr}}
+.settings label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+select{width:100%;font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.big{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-top:2px solid var(--ink);padding-top:12px}
+.big .num{font-size:60px;line-height:1;font-weight:700;color:var(--turf);font-variant-numeric:tabular-nums}
+.big .cap{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);padding:10px 12px}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.hi b{color:var(--turf)}
+.tablehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px}
+.tablehead h2{margin:0}
+.tablehead + .stats{margin-top:8px}
+h2{font-size:16px;margin:18px 0 8px}
+.dist{display:flex;flex-direction:column;gap:4px}
+.drow{display:grid;grid-template-columns:72px minmax(0,1fr) 64px;gap:8px;align-items:center;font-size:13px}
+.track{height:12px;background:var(--line);border-radius:3px;overflow:hidden}
+.fill{height:100%;background:var(--turf)}
+.drow span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.log{list-style:none;padding:0;margin:0;font-size:13px;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.log li{display:grid;grid-template-columns:76px 64px 1fr auto;gap:8px;padding:6px 12px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.log li:last-child{border-bottom:0}
+.tag{font-weight:700}.tag.red{color:var(--red)}.tag.jp{color:#B07F00}.tag.miss,.tag.end{color:var(--muted)}.tag.ok{color:var(--turf)}
+.note{font-size:13px;color:var(--muted);margin-top:14px;max-width:65ch}
+.langrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.toprow{display:flex;gap:8px;align-items:center;flex:none}
+.snd{padding:6px 12px;font-size:13px}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.lang button{border:0;border-radius:0;padding:6px 12px;font-size:13px}
+.lang button[aria-pressed="true"]{background:var(--deep);color:#fff}
+.launch{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;margin-bottom:18px}
+.launch h2{margin:0 0 4px}
+.launch p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.gauge{position:relative;height:30px;border-radius:8px;background:linear-gradient(270deg,#DCE7DF,#F2B705 60%,#C8102E);overflow:hidden}
+.gauge .needle{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;background:var(--ink);left:0}
+.ticks{display:grid;grid-template-columns:repeat(12,1fr);font-size:11px;color:var(--muted);text-align:center;margin-top:3px;font-variant-numeric:tabular-nums}
+.launchrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#fire{touch-action:none;user-select:none;-webkit-user-select:none;padding:12px 22px;font-size:15px}
+#fire.held{background:var(--red);border-color:var(--red);color:#fff}
+#guess{font-size:14px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.banner{transition:none}}
+.rung{grid-template-columns:96px 1fr auto}.rung.top{grid-template-columns:1fr auto}
+.rung .fb{text-align:center;font-size:15px;line-height:1}
+.rgb{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.rgb span{flex:1;text-align:center;padding:4px 0;border-radius:4px;border:2px solid #3A4A40;background:#0B1F13;color:#6F8076;font-size:12px;font-weight:700}
+.rgb span.on.r{background:#FF2A2A;border-color:#fff;color:#fff}.rgb span.on.g{background:#00B050;border-color:#fff;color:#fff}.rgb span.on.b{background:#00B0F0;border-color:#fff;color:#fff}
+.fball{position:absolute;left:50%;top:0;width:44px;height:28px;margin:-14px 0 0 -22px;z-index:2;pointer-events:none;transition:top .2s linear;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.fball.jump{transition:none}
+.rung.start{background:#0B1F13;color:#9FB3A6}
+.ballrow{margin-top:6px;text-align:center;color:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.tag.r{color:#D81E1E}.tag.g{color:#00944A}.tag.b{color:#0090C8}.tag.w{color:var(--muted)}
+.drow{grid-template-columns:92px minmax(0,1fr) 64px}
+.settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+.banner .b1{font-size:19px}
+.chance{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff}
+.chance .cl{font-size:12px;font-weight:700;color:#9FB3A6}
+.chance .cn{font-size:12px;font-weight:700;color:#F2B705}
+.balls{display:flex;gap:4px;margin:4px 0 2px}
+.balls i{flex:1;text-align:center;font-style:normal;font-size:20px;line-height:1.5;border-radius:6px;background:#14502C;border:2px solid #1E7A3E}
+.balls i.cur{background:#F2B705;border-color:#fff;box-shadow:0 0 8px #F2B705}
+.balls i.used{opacity:.25;filter:grayscale(1)}
+.msg{margin:6px 0 2px;text-align:center;color:#fff;font-size:13px;font-weight:700;line-height:1.35}
+.msg b{color:#F2B705;font-size:17px}
+.field{position:relative;height:68px;margin-top:6px;border-radius:6px;border:2px solid #fff;overflow:hidden;background:#14502C}
+.field .tk{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.22)}
+.field .ez{position:absolute;right:0;top:0;bottom:0;width:12%;display:flex;align-items:center;justify-content:center;background:rgba(200,16,46,.75);border-left:2px solid #fff;color:#fff;font-size:10px;font-weight:700}
+.field .ez span{writing-mode:vertical-rl}
+.field .gl{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #F2B705;transition:left .5s ease}
+.field .flag{position:absolute;top:3px;transform:translateX(-50%);text-align:center;font-size:18px;line-height:1;transition:left .5s ease}
+.field .ball{position:absolute;bottom:3px;transform:translateX(-50%);text-align:center;font-size:24px;line-height:1;transition:left .6s ease}
+.field em{display:block;font-style:normal;font-size:10px;font-weight:700;margin-top:2px;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap}
+.field .flag em{color:#FFD45C}
+.fl2{display:flex;justify-content:space-between;margin-top:3px;color:#9FB3A6;font-size:10px;font-weight:700}
+.tip{margin-top:8px;text-align:center;color:#9FB3A6;font-size:11px}
+.legend{display:flex;gap:4px;margin-top:4px}
+.chip{flex:1;text-align:center;padding:5px 0;border-radius:6px;border:2px solid #3A4A40;background:#0B1F13;color:#8FA196;font-size:12px;font-weight:700;line-height:1.25}
+.chip small{display:block;font-size:11px;font-weight:700}
+.chip.b{background:#00B0F0;color:#04202E;border-color:#fff}.chip.g{background:#00B050;color:#032612;border-color:#fff}.chip.y{background:#FFD400;color:#3A3000;border-color:#fff}
+.chip.rb{background:linear-gradient(90deg,#f33,#fc0,#3c3,#3cf,#93f);color:#fff;border-color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.chip.off{opacity:.35}
+.call{margin-top:8px;padding:10px 8px;border-radius:8px;text-align:center;color:#fff;background:#7A1420;border:2px solid #fff;font-size:12px;font-weight:700;line-height:1.35}
+.call b{display:block;font-size:20px}
+.res{margin-top:6px;text-align:center;color:#F2B705;font-size:24px;font-weight:700}
+.score{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px;text-align:center;color:#9FB3A6;font-size:11px;font-weight:700}
+.score b{display:block;font-size:20px;line-height:1.2;color:#F2B705;font-variant-numeric:tabular-nums}
+.video{margin-top:6px;text-align:center;color:#9FB3A6;font-size:11px}
+.tag.gain,.tag.first{color:var(--turf)}.tag.fail,.tag.over{color:var(--muted)}.tag.td,.tag.td6,.tag.jp{color:#B07F00}.tag.fg{color:var(--red)}
+.rung.far{opacity:.3}
+.rung .rv{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section data-i18n-aria="aCab" aria-label="게임기 화면">
+    <div class="cab">
+      <div class="topper"><div class="logo">TOUCHDOWN <span class="mode">Football Ladder</span><small>TICKETS</small></div><div class="jp" id="jpTop">BIG BONUS</div><div class="crd" id="crdTop">CREDIT 0</div></div>
+      <div class="monitor" aria-live="polite">
+        <div id="ladder"></div>
+        <div class="banner" id="banner"><div class="b1" id="b1"></div><div class="b2" id="b2"></div></div>
+      </div>
+      <div class="pfwrap"><canvas id="pf" width="440" height="330" data-i18n-aria="aPf" aria-label="플레이필드: 핀, 11개 홀, 발사 레인"></canvas><div class="vgauge" aria-hidden="true"><div class="vfill" id="vfill"></div><span class="vt">MAX</span></div></div>
+      <div class="ledge"><button id="knob" class="knob" aria-label="PULL">PULL</button></div>
+      <div class="coin"><button class="credit" id="credit2"></button></div>
+    </div>
+  </section>
+
+  <section data-i18n-aria="aPanel" aria-label="시뮬레이션 제어와 결과">
+    <div class="langrow"><h1 data-i18n="title">Touchdown Tickets 풋볼 사다리 시뮬레이터</h1><div class="toprow"><button id="snd" class="snd" aria-pressed="true"></button><div class="lang" role="group" aria-label="Language"><button id="lkKo" data-lang="ko">한국어</button><button id="lkEn" data-lang="en">English</button></div></div></div>
+    <p class="lede" data-i18n="lede"></p>
+
+    <div class="controls">
+      <button class="credit" id="credit"></button>
+      <button class="primary" id="play">자동 플레이 시작</button>
+      <button id="one" data-i18n="one">1볼 발사</button>
+      <button id="b1k" data-i18n="b1k">1,000크레딧 즉시 실행</button>
+      <button id="b10k" data-i18n="b10k">10,000크레딧 즉시 실행</button>
+    </div>
+
+    <div class="launch">
+      <h2 data-i18n="launchH">직접 발사</h2>
+      <p data-i18n="launchP">버튼을 누르고 있으면 게이지 바늘이 오른쪽(약하게)에서 왼쪽(세게)으로 움직이고 다시 돌아옵니다. 바늘 아래 번호가 노리는 홀이고, 플레이필드에도 노란 화살표로 표시됩니다. 원하는 홀 위에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.</p>
+      <div class="launchrow"><button class="primary" id="fire" data-i18n="fire">누르고 있다가 놓아서 발사</button><span id="guess" aria-live="polite">힘 0% · 예상 도착 11번 홀 부근</span></div>
+    </div>
+
+    <div class="settings">
+      <div><label for="speed" data-i18n="speedL">애니메이션 속도</label>
+        <select id="speed"><option value="1" data-i18n="sp1">보통</option><option value="3" data-i18n="sp2">빠르게</option><option value="8" data-i18n="sp3">매우 빠르게</option></select></div>
+      <div><label for="skill" data-i18n="skillL">칸별 성공 확률</label>
+        <select id="skill"><option value="base" data-i18n="skB">기준안</option><option value="luck" data-i18n="skL">순수 운</option><option value="strong" data-i18n="skS">스킬 강함</option></select></div>
+      <div><label for="tries" data-i18n="triesL">플레이어가 쏠 다운 수</label>
+        <select id="tries"><option value="1" data-i18n="tr1">One Try</option><option value="2" data-i18n="tr2">Two Tries</option><option value="3" data-i18n="tr3">Three Tries</option><option value="4" data-i18n="tr4" selected>Four Tries</option></select></div>
+      <div><label for="mult" data-i18n="multL">티켓 배율</label>
+        <select id="mult"><option value="1">×1</option><option value="2">×2</option></select></div>
+    </div>
+
+    <div class="big"><span class="num" id="avg">0.0</span><span class="cap"><span data-i18n="avgCap">크레딧당 평균 티켓</span> <span id="theory"></span></span></div>
+
+    <div class="tablehead"><h2 data-i18n="dataH">플레이 데이터</h2><button id="reset" data-i18n="reset">데이터 지우기</button></div>
+    <div class="stats">
+      <div class="stat hi"><b id="sAvg">0.0</b><span data-i18n="st1">크레딧당 평균 티켓</span></div>
+      <div class="stat"><b id="sRecent">-</b><span data-i18n="st2">최근 100크레딧 평균</span></div>
+      <div class="stat"><b id="sTheory">50.0</b><span data-i18n="st3">이론 평균 (현재 설정)</span></div>
+      <div class="stat"><b id="sCred">0</b><span id="sCredF">사용 크레딧</span></div>
+      <div class="stat"><b id="sTix">0</b><span data-i18n="st5">지급 티켓</span></div>
+      <div class="stat"><b id="sStep">0 yd</b><span data-i18n="st6">현재 도전 칸</span></div>
+      <div class="stat"><b id="sRed">0</b><span id="sRedF">골드 보너스 당첨</span></div>
+      <div class="stat"><b id="sJp">0</b><span id="sJpF">잭팟</span></div>
+      <div class="stat"><b id="sMiss">0</b><span data-i18n="st9">꽝 (녹색 홀)</span></div>
+    </div>
+
+    <h2 data-i18n="distH">게임이 끝날 때 몇 칸까지 성공했는지</h2>
+    <div class="dist" id="dist"></div>
+
+    <h2 data-i18n="logH">최근 기록</h2>
+    <ul class="log" id="log"></ul>
+    <p class="note" data-i18n="note"></p>
+  </section>
+</div>
+
+<script>
+const I18N = {
+ ko: { title:'Touchdown Tickets 풋볼 사다리 시뮬레이터', lede:'미식축구 규칙을 핀볼로 옮긴 게임입니다. 상대 골라인까지 40~60야드를 남기고 시작하고(가끔 아주 가까운 스페셜 찬스), 4번의 공격 기회 안에 10야드를 가면 기회가 새로 4번 주어집니다. 불이 켜진 홀에 넣으면 파랑 10야드, 초록 5야드, 노랑 1~2야드를 전진하고, 가끔 나타나 빠르게 움직이는 무지개 불빛은 10야드 이상(랜덤)입니다. 불이 안 켜진 홀은 실패이고, 4번 안에 10야드를 못 가면 GAME OVER입니다. 사다리의 10야드 칸에 새로 도달할 때마다 그 칸의 티켓을 바로 받고, 무지개로 크게 전진하면 오른쪽 BONUS 티켓을 받습니다. 골라인에 닿으면 터치다운 BIG BONUS를 받고, 중앙의 빨간 홀 6개에 넣으면 +1점과 JP입니다. 4번째 기회에서 골라인까지 40야드 이내인데 그 시리즈에서 5야드도 못 갔으면 필드골(빨간 홀 4~6개, 3점) 기회입니다. 1점 = 10장입니다.',
+  creditBtn:n=>'크레딧 넣기 · 보유 '+n,
+  one:'1볼 발사', b1k:'1,000크레딧 즉시 실행', b10k:'10,000크레딧 즉시 실행', playStart:'자동 플레이 시작', playStop:'자동 플레이 멈춤',
+  launchH:'직접 발사', launchP:'발사 레인 오른쪽의 세로 게이지가 힘을 보여 줍니다. 게임기 아래의 빨간 PULL 손잡이나 아래 버튼을 누르고 있으면 게이지가 아래(약하게)에서 위(세게)로 올라갔다 내려옵니다. 세게 쏠수록 왼쪽 홀로 갑니다. 원하는 힘에서 손을 떼면 발사됩니다. 스페이스 키로도 할 수 있습니다.',
+  fire:'누르고 있다가 놓아서 발사', guess:(p,h)=>`힘 ${p}% · 예상 도착 ${h}번 홀 부근`,
+  speedL:'애니메이션 속도', sp1:'보통', sp2:'빠르게', sp3:'매우 빠르게', skillL:'조준 실력 (자동 플레이)', skB:'기준안', skL:'순수 운', skS:'스킬 강함',
+  triesL:'플레이어가 쏠 다운 수', tr1:'One Try', tr2:'Two Tries', tr3:'Three Tries', tr4:'Four Tries (기본)', multL:'티켓 배율',
+  avgCap:'크레딧당 평균 티켓', theory:v=>`(추정값 ${v}장)`, cred:'사용 크레딧', credF:(b,a)=>`사용 크레딧 (볼 ${b}개 · 크레딧당 ${a}개)`, unit:v=>v+'장', dataH:'플레이 데이터', reset:'데이터 지우기',
+  st1:'크레딧당 평균 티켓', st2:'최근 100크레딧 평균', st3:'추정 평균 (현재 설정)', st5:'지급 티켓', st6:'현재 상황', st9:'GAME OVER',
+  red:'터치다운', redF:n=>`터치다운 (${n}크레딧에 1회)`, jp:'JP 당첨', jpF:n=>`JP 당첨 (${n}크레딧에 1회)`,
+  distH:'게임이 어떻게 끝났는지', reach:k=>['GAME OVER','필드골 3점','터치다운 (JP 실패)','터치다운 + JP'][k], logH:'최근 기록 (크레딧-볼)', logEmpty:'크레딧을 넣고 자동 플레이를 시작하거나 볼을 발사하면 기록이 쌓입니다.',
+  holeN:h=>h+'번 홀', ballOf:n=>'BALL '+n, redHoles:n=>'빨간 홀 '+n+'개', video:'비디오',
+  mChance:'공격 기회', mChanceN:d=>d+'번째 / 4번', mNeed:y=>`<b>${y}야드</b> 더 가면 기회가 4번으로 새로 시작!`, mGoal:y=>`터치다운까지 <b>${y}야드</b>!`,
+  mTip:'불 켜진 홀에 넣으면 전진! 꺼진 홀은 실패!', mBlue:'파랑', mGreen:'초록', mYellow:'노랑', mRainbow:'무지개', mYd:s=>s+'야드', mYdUp:'+10야드↑',
+  mHere:'현재', mTarget:'목표', mOwn:'우리 골라인', mToGoal:y=>`터치다운까지 ${y}야드`, mTDzone:'터치다운',
+  mFG:'필드골 찬스!', mFGsub:'빨간 홀에 넣으면 3점', mJPc:'터치다운! 6점', mJPsub:'빨간 홀에 넣으면 +1점 & JP', mPts:'점수', mTix:'받은 티켓', mJPl:'JP 잭팟', mPer:n=>`1점 = ${n}장`, mVideo:'비디오 진행',
+  mResult:{ over:'GAME OVER', fg:'필드골 성공!', td6:'터치다운!', jp:'터치다운 + JP!' }, mRow:y=>y+'야드 남음', mTDrow:'TOUCHDOWN',
+  bGain:(y,rb)=>(rb?'무지개! ':'')+'+'+y+'야드 전진', bFirst:rb=>(rb?'무지개! ':'')+'새 공격 기회!', bFirstSub:y=>'+'+y+'야드', bChance:d=>'공격 기회 '+d+'/4',
+  bFail:{ 'BLOCKED':'BLOCKED 막혔다!', 'OUT OF BOUNDS':'OUT OF BOUNDS 라인 밖!', 'FUMBLE':'FUMBLE 공을 놓쳤다!' }, bTD:'터치다운!', bTDsub:'+6점 · JP 찬스', bOver:'GAME OVER', bNoGood:'필드골 실패', bFG:'필드골 성공!', bTD6:'JP 실패', bJP:'JP 당첨!',
+  note:'사다리 칸 티켓, BONUS, BIG BONUS는 평균 50장에 맞춘 조정용 값입니다. 1점 = 10장이고(필드골 3점 = 30장), JP는 시작 40장에서 크레딧마다 6장씩 쌓이는 프로그레시브입니다(당첨되면 초기화). 한 번에 여러 칸을 가면 지나간 칸의 티켓을 모두 받지만, 무지개로 10야드를 넘게 가면 도착한 칸의 BONUS만 받습니다. 자동 플레이는 조준 실력만큼의 확률로 불 켜진 홀을 노리고, 그 외에는 무작위로 떨어지며 오른쪽 홀일수록 덜 들어갑니다(기준안 35%, 순수 운 0%, 스킬 강함 50%). 램프 개수와 위치는 매 볼마다 바뀝니다. 비디오로 진행하는 다운도 플레이어 볼과 같은 확률로 야드가 정해지고 같은 칸 티켓을 주기 때문에, One~Four Tries 옵션은 평균 티켓을 바꾸지 않고 플레이 시간만 줄입니다.'+25+'장이고, JP는 시작 '+50+'장에서 크레딧마다 '+8+'장씩 쌓이는 프로그레시브입니다(당첨되면 초기화). 이 숫자들과 위의 확률은 모두 조정용 추정값입니다. 자동 플레이는 조준 실력만큼의 확률로 불 켜진 홀을 노리고, 그 외에는 무작위로 떨어지며 오른쪽 홀일수록 덜 들어갑니다(기준안 35%, 순수 운 0%, 스킬 강함 50%). 램프 개수와 위치는 매 볼마다 바뀌고, 필요한 야드가 많거나(8야드 이상) 적을 때(3야드 이하)는 개수가 달라집니다. 비디오로 진행하는 다운은 플레이어 볼과 같은 확률로 야드가 정해져서, One~Four Tries 옵션은 평균 티켓을 바꾸지 않고 플레이 시간만 줄입니다.',
+  aCab:'게임기 화면', aPf:'플레이필드: 핀, 12개 홀, 발사 레인', aPanel:'시뮬레이션 제어와 결과', sndOn:'🔊 소리 켜짐', sndOff:'🔇 소리 꺼짐' },
+ en: { title:'Touchdown Tickets football ladder simulator', lede:'American football turned into a pinball game. You start 40 to 60 yards from the goal line (sometimes a very short special chance) and get four tries to gain 10 yards, which earns four fresh tries. A ball in a lit hole gains 10 yards (blue), 5 (green) or 1 to 2 (yellow); an occasional rainbow lamp sweeps quickly left and right and is worth 10+ yards (random). A hole that is not lit is a miss, and four tries without 10 yards is GAME OVER. Each time the ball reaches a new 10-yard line on the ladder you get that line\'s tickets right away, and a big rainbow gain pays the BONUS tickets on the right. Reaching the goal line pays the touchdown BIG BONUS, and a ball in one of the 6 red holes in the middle adds 1 point and the JP. On the 4th try, if you are within 40 yards of the goal and gained under 5 yards on this series, you get a field goal try (4 to 6 red holes, 3 points). 1 point = 10 tickets.',
+  creditBtn:n=>'Insert credit · '+n+' left',
+  one:'Shoot 1 ball', b1k:'Run 1,000 credits now', b10k:'Run 10,000 credits now', playStart:'Start auto play', playStop:'Stop auto play',
+  launchH:'Shoot it yourself', launchP:'The vertical gauge beside the launch lane shows your power. Hold the red PULL knob under the cabinet, or the button below, and the gauge rises from soft (bottom) to hard (top) and back. Harder shots travel further left. Let go at the power you want. The space bar works too.',
+  fire:'Hold, then release to shoot', guess:(p,h)=>`Power ${p}% · aiming near hole ${h}`,
+  speedL:'Animation speed', sp1:'Normal', sp2:'Fast', sp3:'Very fast', skillL:'Aiming skill (auto play)', skB:'Base case', skL:'Pure luck', skS:'Strong skill',
+  triesL:'Downs the player shoots', tr1:'One Try', tr2:'Two Tries', tr3:'Three Tries', tr4:'Four Tries (default)', multL:'Ticket multiplier',
+  avgCap:'avg. tickets per credit', theory:v=>`(estimate ${v})`, cred:'Credits played', credF:(b,a)=>`Credits played (${b} balls · ${a} per credit)`, unit:v=>v, dataH:'Play data', reset:'Clear data',
+  st1:'Avg. tickets per credit', st2:'Avg. of last 100 credits', st3:'Estimated avg. (current settings)', st5:'Tickets paid', st6:'Current situation', st9:'GAME OVER',
+  red:'Touchdowns', redF:n=>`Touchdowns (1 in ${n} credits)`, jp:'JP wins', jpF:n=>`JP wins (1 in ${n} credits)`,
+  distH:'How each game ended', reach:k=>['GAME OVER','Field goal, 3 pts','Touchdown (no JP)','Touchdown + JP'][k], logH:'Recent plays (credit-ball)', logEmpty:'Insert a credit, then start auto play or shoot a ball to see plays here.',
+  holeN:h=>'Hole '+h, ballOf:n=>'BALL '+n, redHoles:n=>n+' red holes', video:'VIDEO',
+  mChance:'Chances left', mChanceN:d=>'try '+d+' of 4', mNeed:y=>`Gain <b>${y} more yards</b> to get 4 fresh tries!`, mGoal:y=>`<b>${y} yards</b> to the touchdown!`,
+  mTip:'Lit hole = move forward. Unlit hole = miss.', mBlue:'Blue', mGreen:'Green', mYellow:'Yellow', mRainbow:'Rainbow', mYd:s=>s+' yd', mYdUp:'+10 yd or more',
+  mHere:'You', mTarget:'Goal', mOwn:'Your goal line', mToGoal:y=>`${y} yards to the touchdown`, mTDzone:'TOUCH DOWN',
+  mFG:'Field goal chance!', mFGsub:'A ball in a red hole scores 3 points', mJPc:'Touchdown! 6 points', mJPsub:'A ball in a red hole adds +1 point and the JP', mPts:'Points', mTix:'Tickets won', mJPl:'JP jackpot', mPer:n=>`1 point = ${n} tickets`, mVideo:'Played by video',
+  mResult:{ over:'GAME OVER', fg:'Field goal is good!', td6:'Touchdown!', jp:'Touchdown + JP!' }, mRow:y=>y+' yd left', mTDrow:'TOUCHDOWN',
+  bGain:(y,rb)=>(rb?'Rainbow! ':'')+'+'+y+' yards', bFirst:rb=>(rb?'Rainbow! ':'')+'New set of tries!', bFirstSub:y=>'+'+y+' yd', bChance:d=>'Try '+d+' of 4',
+  bFail:{ 'BLOCKED':'BLOCKED!', 'OUT OF BOUNDS':'OUT OF BOUNDS!', 'FUMBLE':'FUMBLE!' }, bTD:'TOUCHDOWN!', bTDsub:'+6 points · JP chance', bOver:'GAME OVER', bNoGood:'Field goal missed', bFG:'FIELD GOAL!', bTD6:'No JP', bJP:'JACKPOT!',
+  note:'The ladder tickets, BONUS and BIG BONUS are adjustable values tuned to an average of 50. 1 point = 10 tickets (a 3-point field goal = 30), and the JP is a progressive that starts at 40 and grows by 6 per credit (it resets when won). Gaining several lines at once pays every line you passed, but a rainbow gain of more than 10 yards pays only the BONUS of the line you land on. In auto play the ball is aimed at a lit hole with a probability equal to the aiming skill and otherwise lands at random, with the right-hand holes catching fewer balls (base case 35%, pure luck 0%, strong skill 50%). The number and position of the lamps change on every ball. Downs played by video use the same odds as a player ball and pay the same line tickets, so the One to Four Tries option shortens play without changing the average tickets.'+25+' tickets, and the JP is a progressive that starts at '+50+' and grows by '+8+' per credit (it resets when won). These numbers and the odds above are all adjustable estimates. In auto play the ball is aimed at a lit hole with a probability equal to the aiming skill and otherwise lands at random, with the right-hand holes catching fewer balls (base case 35%, pure luck 0%, strong skill 50%). The number and position of the lamps change on every ball, and the count differs when many yards are needed (8 or more) or few (3 or fewer). Downs played by video use the same odds as a player ball, so the One to Four Tries option shortens play without changing the average tickets.',
+  aCab:'Game cabinet', aPf:'Playfield: pins, 12 holes, launch lane', aPanel:'Simulation controls and results', sndOn:'🔊 Sound on', sndOff:'🔇 Sound off' }
+};
+let LANG = 'ko';
+try { const v = localStorage.getItem('tdLang'); if (v === 'en' || v === 'ko') LANG = v; } catch (e) {}
+const tr = () => I18N[LANG];
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const v = tr()[el.dataset.i18n]; if (typeof v === 'string') el.textContent = v; });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', tr()[el.dataset.i18nAria]));
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG ? 'true' : 'false'));
+  document.getElementById('play').textContent = running ? tr().playStop : tr().playStart;
+  document.title = tr().title;
+  showCredit();
+  $('snd').textContent = soundOn ? tr().sndOn : tr().sndOff; $('snd').setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+}
+/* ===== football rules engine (pure rules, no DOM) ===== */
+let rnd = Math.random; /* swapped for a seeded generator while the theory values are estimated */
+const N = 12;
+const DOWNS = 4, FIRST = 10;                       /* 4 downs to gain 10 yards */
+const START_MIN = 40, START_MAX = 60;              /* yards left to the goal line at the start of a game */
+const SPECIAL_P = .10, SPECIAL_MIN = 6, SPECIAL_MAX = 20; /* special chance: a very short distance */
+const FG_MAX_DIST = 40, FG_STALL = 5;              /* field goal: within 40 yards and under 5 yards gained on this series */
+const PTS = { td: 6, extra: 1, fg: 3 };
+const AIM = { base: .35, luck: 0, strong: .5 };    /* chance an auto-play ball is aimed at a lit hole */
+const RAINBOW_P = .35;                             /* a rainbow lamp shows up on 35% of the balls */
+const RAINBOW = [[10, .4], [15, .25], [20, .2], [30, .1], [40, .05]]; /* rainbow = 10+ yards, random */
+const YELLOW = [1, 2];
+const AUTO = [[0, .372], [1, .136], [2, .134], [5, .217], [10, .124], [15, .007], [20, .006], [30, .003], [40, .001]]; /* a down played by video: same odds as a player ball (base case) */
+const FAILS = ['BLOCKED', 'OUT OF BOUNDS', 'FUMBLE'];
+const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+const pick = tbl => { let u = rnd(), s = 0; for (const [v, p] of tbl) { s += p; if (u < s) return v; } return tbl[tbl.length - 1][0]; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const ytgOf = g => Math.max(1, Math.min(FIRST - g.series, g.dist));
+/* how many lamps of each color, by the yards still needed for a first down (a placeholder for NFL-based tables) */
+const counts = ytg => ytg >= 8 ? { b: 1, g: 2, y: 2 } : ytg <= 3 ? { b: 1, g: 1, y: 4 } : { b: 1, g: 2, y: 3 };
+const fgHoles = d => d <= 20 ? 6 : d <= 30 ? 5 : 4; /* red field-goal holes, more when closer */
+const LAND = i => 1.4 - 0.8 * i / (N - 1);          /* the right-hand holes catch fewer balls than the left-hand ones */
+
+function layoutG(g) {
+  const L = new Array(N).fill(null);
+  g.rainbow = false;
+  if (!g.done) {
+    if (g.phase === 'drive') {
+      const c = counts(ytgOf(g)), idx = shuffle([...Array(N).keys()]); let p = 0;
+      for (const t of ['b', 'g', 'y']) for (let j = 0; j < c[t]; j++) L[idx[p++]] = t;
+      g.rainbow = rnd() < RAINBOW_P;
+    } else {
+      const c = g.phase === 'fg' ? fgHoles(g.dist) : 6, s = Math.floor((N - c) / 2);
+      for (let j = 0; j < c; j++) L[s + j] = 'r';
+    }
+  }
+  g.lamps = L;
+}
+function checkFG(g) {
+  if (g.phase === 'drive' && g.down === DOWNS && g.dist <= FG_MAX_DIST && g.series < FG_STALL) g.phase = 'fg';
+}
+/* the downs that are played by video instead of by the player (option: One / Two / Three / Four Tries) */
+function autoDowns(g) {
+  const skip = DOWNS - g.tries; let k = 0;
+  while (k < skip && g.phase === 'drive') {
+    const gain = pick(AUTO), from = g.dist; g.autoLog.push({ down: g.down, gain, from, to: Math.max(0, from - gain) });
+    g.dist -= gain; g.series += gain;
+    if (g.dist <= 0) { g.dist = 0; g.phase = 'jp'; g.pts = PTS.td; g.autoTD = true; return; }
+    if (g.series >= FIRST) { g.down = 1; g.series = 0; k = 0; continue; }
+    g.down++; k++;
+  }
+  checkFG(g);
+}
+function newG(tries) {
+  const special = rnd() < SPECIAL_P;
+  const g = { tries, special, dist: special ? ri(SPECIAL_MIN, SPECIAL_MAX) : ri(START_MIN / 5, START_MAX / 5) * 5, down: 1, series: 0, phase: 'drive', pts: 0, balls: 0, done: false, lamps: [], rainbow: false, autoLog: [], autoTD: false, payIdx: 0 };
+  g.start = g.dist; autoDowns(g); layoutG(g); return g;
+}
+/* one ball into hole `hole`; `rb` is the hole the rainbow lamp is on when the ball drops */
+function playBall(g, hole, rb) {
+  const res = { phase: g.phase, down: g.down, ytg: ytgOf(g), dist0: g.dist, hole, lamp: null, gain: 0, kind: 'fail', msg: '', end: false, pts: 0, jpWin: false, fgOpen: false };
+  g.balls++;
+  const lamp = g.lamps[hole];
+  if (g.phase === 'drive') {
+    let gain = 0, tag = null;
+    if (g.rainbow && rb === hole) { gain = pick(RAINBOW); tag = 'rb'; }
+    else if (lamp === 'b') { gain = 10; tag = 'b'; }
+    else if (lamp === 'g') { gain = 5; tag = 'g'; }
+    else if (lamp === 'y') { gain = YELLOW[ri(0, 1)]; tag = 'y'; }
+    res.lamp = tag; res.gain = gain;
+    if (tag) {
+      g.dist -= gain; g.series += gain;
+      if (g.dist <= 0) { g.dist = 0; g.phase = 'jp'; g.pts = PTS.td; res.kind = 'td'; layoutG(g); return res; }
+      if (g.series >= FIRST) { g.down = 1; g.series = 0; res.kind = 'first'; autoDowns(g); layoutG(g); return res; }
+      res.kind = 'gain';
+    } else res.msg = FAILS[ri(0, 2)];
+    g.down++;
+    if (g.down > DOWNS) { g.done = true; res.end = true; res.kind = 'over'; layoutG(g); return res; }
+    const before = g.phase; checkFG(g); res.fgOpen = before !== g.phase;
+    layoutG(g); return res;
+  }
+  g.done = true; res.end = true;
+  if (g.phase === 'fg') {
+    if (lamp === 'r') { g.pts = PTS.fg; res.kind = 'fg'; } else { res.kind = 'over'; res.msg = 'NO GOOD'; }
+  } else if (lamp === 'r') { g.pts = PTS.td + PTS.extra; res.jpWin = true; res.kind = 'jp'; }
+  else res.kind = 'td6';
+  res.pts = g.pts; layoutG(g); return res;
+}
+/* where an auto-play ball goes */
+function aimShot(g, sk) {
+  const lit = []; g.lamps.forEach((t, i) => { if (t) lit.push(i); });
+  const t = lit[ri(0, lit.length - 1)]; let hole;
+  if (rnd() < sk * (1.2 - 0.6 * t / (N - 1))) hole = t;
+  else { let tot = 0; for (let i = 0; i < N; i++) tot += LAND(i); let u = rnd() * tot; hole = N - 1; for (let i = 0; i < N; i++) { u -= LAND(i); if (u < 0) { hole = i; break; } } }
+  return { hole, rb: g.rainbow ? ri(0, N - 1) : -1 };
+}
+/* play whole games with the auto player: stats for the theory values */
+function estimate(skill, tries, games, seed) {
+  const save = rnd; let s = seed >>> 0;
+  rnd = () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  let pts = 0, balls = 0, td = 0, fg = 0, jpw = 0, over = 0;
+  for (let i = 0; i < games; i++) {
+    const g = newG(tries);
+    while (!g.done) { const a = aimShot(g, AIM[skill]); playBall(g, a.hole, a.rb); }
+    pts += g.pts; balls += g.balls; if (g.pts >= 6) td++; if (g.pts === 3) fg++; if (g.pts === 7) jpw++; if (g.pts === 0) over++;
+  }
+  rnd = save;
+  return { pts: pts / games, balls: balls / games, td: td / games, fg: fg / games, jp: jpw / games, over: over / games };
+}
+
+/* ---------- the ladder: tickets for reaching each 10-yard line ---------- */
+/* row = yards left to the goal rounded up to the next 10 (row 1 = 10 yards left ... row 6 = 60 yards left, 0 = touchdown) */
+const rowOf = d => d <= 0 ? 0 : Math.ceil(d / 10);
+const LINE = [0, 12, 8, 5, 3, 2];       /* tickets for reaching row 1..5 (row 6 is only a starting line) */
+const BONUS = [0, 40, 30, 22, 16, 12];  /* tickets instead, when a rainbow gain of more than 10 yards lands on row 1..5 */
+const BIG = 160;                        /* touchdown BIG BONUS, paid when the ball reaches the goal line */
+const TPP = 10;                         /* tickets per point (field goal = 3 points, the extra point = 1 point) */
+const JP_BASE = 40, JP_STEP = 6;        /* progressive JP: starts at JP_BASE and grows by JP_STEP tickets for every credit played */
+let jp = JP_BASE;
+function rowPay(from, to, bonus) {
+  const rf = rowOf(from), rt = rowOf(to);
+  if (rt >= rf) return 0;
+  if (rt === 0) return BIG;
+  if (bonus) return BONUS[rt];
+  let p = 0; for (let r = rf - 1; r >= rt; r--) p += LINE[r];
+  return p;
+}
+/* pay the downs that were played by video since the last call (a gain of more than 10 yards counts as a rainbow gain) */
+function drainAuto(g) {
+  let p = 0;
+  for (; g.payIdx < g.autoLog.length; g.payIdx++) { const a = g.autoLog[g.payIdx]; p += rowPay(a.from, a.to, a.gain > 10); }
+  return p;
+}
+/* estimated average per credit: play whole games with the auto player (the JP seed and growth are paid out in the long run) */
+function estimateTix(skill, tries, games, seed) {
+  const save = rnd; let q = seed >>> 0;
+  rnd = () => { q = (q + 0x6D2B79F5) >>> 0; let t = q; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  let tot = 0, jpw = 0;
+  for (let i = 0; i < games; i++) {
+    const g = newG(tries); let pay = drainAuto(g);
+    while (!g.done) {
+      const a = aimShot(g, AIM[skill]), d0 = g.dist, res = playBall(g, a.hole, a.rb);
+      if (res.phase === 'drive') pay += rowPay(d0, Math.max(0, d0 - res.gain), res.gain > 10);
+      pay += drainAuto(g);
+    }
+    if (g.pts === 3) pay += PTS.fg * TPP;
+    if (g.pts === 7) { pay += PTS.extra * TPP; jpw++; }
+    tot += pay;
+  }
+  rnd = save;
+  return tot / games + JP_BASE * jpw / games + JP_STEP;
+}
+const THEORY = {};
+for (const k of Object.keys(AIM)) THEORY[k] = estimateTix(k, 4, 40000, 20260602);
+
+const $ = id => document.getElementById(id);
+const mult = () => +$('mult').value;
+const skillKey = () => $('skill').value;
+const triesN = () => +$('tries').value;
+const fmt = n => n.toLocaleString('ko-KR');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const newStats = () => ({ cred: 0, balls: 0, tix: 0, pts: 0, td: 0, jp: 0, fg: 0, fail: 0, yards: 0, reach: [0, 0, 0, 0], games: 0 });
+let st = newStats();
+let G = null, lastTitle = '', rainbowPos = 0, rbDir = 1;
+let inCredit = false, credTix = 0, ballNo = 0;
+let running = false, busy = false, redPos = 0, log = [], recent = [];
+function newGame() { G = newG(triesN()); lastTitle = ''; rainbowPos = Math.floor(Math.random() * N); if (!inCredit) ballNo = 0; }
+newGame();
+const LCOL = { b: '#00B0F0', g: '#00B050', y: '#FFD400', r: '#FF2A2A' };
+const ORD = ['', '1st', '2nd', '3rd', '4th'];
+
+/* ---------- game logic ---------- */
+function shoot() {
+  const a = aimShot(G, AIM[skillKey()]);
+  return { k: 1, hole: a.hole, rb: a.rb, red: -1, aim: a.hole };
+}
+function settle(r) {
+  const m = mult();
+  if (!inCredit) { inCredit = true; st.cred++; credTix = 0; ballNo = 0; jp += JP_STEP; }
+  st.balls++; ballNo++;
+  let bp = drainAuto(G);                                                   /* video downs played before this ball */
+  const res = playBall(G, r.hole, r.rb);
+  if (res.phase === 'drive') bp += rowPay(res.dist0, Math.max(0, res.dist0 - res.gain), res.gain > 10); /* the ball's own gain */
+  bp += drainAuto(G);                                                      /* video downs played after a first down */
+  res.ball = ballNo; res.ballPay = bp * m; res.pay = 0; st.yards += res.gain;
+  if (res.kind === 'fail') st.fail++;
+  if (res.kind === 'first' && G.phase === 'jp') { res.kind = 'td'; res.video = true; } /* the video downs reached the goal line */
+  if (res.end) {
+    res.pts = G.pts;
+    if (G.pts === PTS.fg) res.pay = PTS.fg * TPP * m;
+    if (res.jpWin) { res.jpGot = jp * m; res.pay = PTS.extra * TPP * m + res.jpGot; st.jp++; jp = JP_BASE; }
+    if (G.pts >= 6) st.td++;
+    if (G.pts === 3) st.fg++;
+    st.pts += G.pts; st.games++; st.reach[G.pts === 0 ? 0 : G.pts === 3 ? 1 : G.pts === 6 ? 2 : 3]++;
+    inCredit = false;
+  }
+  res.total = res.ballPay + res.pay;
+  st.tix += res.total; credTix += res.total;
+  if (res.end) { recent.push(credTix); if (recent.length > 100) recent.shift(); }
+  res.after = { down: G.down, dist: G.dist, ytg: ytgOf(G), phase: G.phase };
+  return res;
+}
+function logDesc(e) {
+  const rb = e.lamp === 'rb' ? 'RAINBOW ' : '';
+  return { gain: rb + '+' + e.gain + ' yd', first: rb + '+' + e.gain + ' yd · FIRST DOWN', fail: e.msg, td: rb + '+' + e.gain + ' yd · TOUCHDOWN', over: e.msg || 'GAME OVER', fg: 'FIELD GOAL GOOD', jp: 'TD +1 · JP', td6: 'TOUCHDOWN' }[e.kind];
+}
+function pushLog(r, res) {
+  log.unshift({ n: st.cred + '-' + ballNo, ...res, hole: r.hole + 1 });
+  if (log.length > 40) log.pop();
+}
+
+/* ---------- monitor ---------- */
+function drawLadder() {
+  const g = G, m = mult(), t = tr(), cur = rowOf(g.dist), start = rowOf(g.start), td = g.dist <= 0;
+  let h = '';
+  if (g.done) h += `<div class="res">${t.mResult[lastTitle] || t.mResult.over}</div>`;
+  if (g.phase === 'drive' && !g.done) {
+    const dots = [1, 2, 3, 4].map(d => `<i class="${d < g.down ? 'used' : d === g.down ? 'cur' : ''}">🏈</i>`).join('');
+    h += `<div class="chance"><span class="cl">${t.mChance}</span><span class="cn">${t.mChanceN(g.down)}</span></div><div class="balls">${dots}</div>`;
+    h += `<div class="msg">${g.dist <= FIRST - g.series ? t.mGoal(g.dist) : t.mNeed(ytgOf(g))}</div>`;
+  } else if (g.phase === 'fg' && !g.done) h += `<div class="call"><b>${t.mFG}</b>${t.mFGsub}</div>`;
+  else if (g.phase === 'jp' && !g.done) h += `<div class="call"><b>${t.mJPc}</b>${t.mJPsub}</div>`;
+  /* the ladder: yards left to the goal, with the tickets for reaching each line */
+  h += `<div class="rung top${td ? ' cur' : ''}" style="margin-top:8px"><span>${td ? '🏈 ' : ''}${t.mTDrow}</span><span class="rv">BIG BONUS ${fmt(BIG * m)}</span></div>`;
+  for (let r = 1; r <= 6; r++) {
+    const here = r === cur && !td, paid = r <= 5;
+    h += `<div class="rung${here ? ' cur' : ''}${r > start ? ' far' : ''}"><span>${here ? '🏈 ' : ''}${t.mRow(r * 10)}</span><span>${paid ? fmt(LINE[r] * m) : ''}</span><span class="rv">${paid ? 'BONUS ' + fmt(BONUS[r] * m) : ''}</span></div>`;
+  }
+  if (g.phase === 'drive' && !g.done) {
+    h += `<div class="legend"><span class="chip b">${t.mBlue}<small>${t.mYd('+10')}</small></span><span class="chip g">${t.mGreen}<small>${t.mYd('+5')}</small></span><span class="chip y">${t.mYellow}<small>${t.mYd('+1~2')}</small></span><span class="chip rb${g.rainbow ? '' : ' off'}">${t.mRainbow}<small>${t.mYdUp}</small></span></div>`;
+  }
+  h += `<div class="score"><div><b>${g.pts}</b>${t.mPts}</div><div><b>${fmt(credTix)}</b>${t.mTix}</div><div><b>${fmt(jp * m)}</b>${t.mJPl}</div></div>`;
+  if (g.tries < DOWNS && g.autoLog.length) h += `<div class="video">${t.mVideo}: ${g.autoLog.slice(-3).map(a => t.mChanceN(a.down).split(' ')[0] + ' +' + a.gain).join(' · ')}</div>`;
+  h += `<div class="video">${t.mPer(fmt(TPP * m))}</div>`;
+  $('ladder').innerHTML = h;
+  $('jpTop').textContent = 'BIG BONUS ' + fmt(BIG * m);
+}
+let bannerT;
+function banner(res) {
+  const b = $('banner'), t = tr(), rb = res.lamp === 'rb', sit = res.after.phase === 'drive' ? t.bChance(res.after.down) : '';
+  const tbl = {
+    gain: [t.bGain(res.gain, rb), res.ballPay ? '+' + fmt(res.ballPay) : sit, 'ok'], first: [t.bFirst(rb), res.ballPay ? '+' + fmt(res.ballPay) : t.bFirstSub(res.gain), 'ok'],
+    fail: [t.bFail[res.msg] || res.msg, sit, 'miss'], td: [t.bTD, '+' + fmt(res.ballPay) + ' · JP', 'jp'],
+    over: [res.msg === 'NO GOOD' ? t.bNoGood : t.bOver, res.total ? '+' + fmt(res.total) : '0', 'end'], fg: [t.bFG, '+' + fmt(res.pay), 'red'],
+    td6: [t.bTD6, res.ballPay ? '+' + fmt(res.ballPay) : '0', 'end'], jp: [t.bJP, '+' + fmt(res.pay), 'jp']
+  };
+  const x = tbl[res.kind];
+  $('b1').textContent = x[0]; $('b2').textContent = x[1];
+  b.className = 'banner show ' + x[2];
+  clearTimeout(bannerT);
+  bannerT = setTimeout(() => b.className = 'banner ' + x[2], res.end ? 2400 : 1100 / spd() + 500);
+}
+function ytgText() { return G.dist <= FIRST - G.series ? 'Goal' : ytgOf(G); }
+
+/* ---------- playfield ---------- */
+const cv = $('pf'), ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height, LANE = W - 34, HOLE_Y = H - 66;
+const holeX = i => 26 + i * ((LANE - 46) / (N - 1));
+const PCX = (LANE - 6) / 2, PHW = (LANE - 6) / 2;
+const pinY = (r, x) => 114 + r * 24 - 18 * Math.pow((x - PCX) / PHW, 2);
+const pins = [];
+for (let r = 0; r < 6; r++) {
+  const n = r % 2 ? 7 : 8, gap = (LANE - 50) / 7;
+  for (let c = 0; c < n; c++) { const x = 25 + c * gap + (r % 2 ? gap / 2 : 0); pins.push([x, pinY(r, x)]); }
+}
+/* static stadium background, drawn once */
+const bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+(function paintBg() {
+  const g = bg.getContext('2d');
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#060D1C'); sky.addColorStop(0.32, '#0B1D2A'); sky.addColorStop(0.5, '#123D24'); sky.addColorStop(0.62, '#1E7A3E'); sky.addColorStop(1, '#176530');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  [[40, 22], [PCX, 8], [LANE - 30, 22]].forEach(([x, y]) => {
+    const l = g.createRadialGradient(x, y, 2, x, y, 90);
+    l.addColorStop(0, 'rgba(255,255,240,0.55)'); l.addColorStop(1, 'rgba(255,255,240,0)');
+    g.fillStyle = l; g.fillRect(0, 0, W, H);
+  });
+  for (let j = 0; j < 3; j++) {
+    const rx = PHW - 12 - j * 16, ry = 72 - j * 12, cy = 20;
+    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 8; g.beginPath(); g.ellipse(PCX, cy, rx, ry, 0, Math.PI * 0.12, Math.PI * 0.88); g.stroke();
+    for (let a = 0.13; a <= 0.875; a += 0.06 + j * 0.01) {
+      const x = PCX + rx * Math.cos(Math.PI * a), y = cy + ry * Math.sin(Math.PI * a);
+      g.fillStyle = '#D2263A'; g.fillRect(x - 2.5, y - 6, 5, 9);
+      g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillRect(x - 2.5, y - 6, 5, 2);
+    }
+  }
+  g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 1;
+  for (let y = HOLE_Y - 40; y < H; y += 14) { g.beginPath(); g.moveTo(8, y); g.lineTo(LANE - 10, y); g.stroke(); }
+  pins.forEach(([x, y]) => {
+    const h = g.createRadialGradient(x, y, 0, x, y, 8);
+    h.addColorStop(0, 'rgba(255,255,255,0.7)'); h.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = h; g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill();
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(x, y, 3.2, 0, 7); g.fill();
+  });
+  const step = (LANE - 46) / (N - 1);
+  for (let i = 0; i <= N; i++) {
+    const x = 26 + (i - 0.5) * step;
+    g.fillStyle = '#C99400'; g.beginPath(); g.moveTo(x - 3, HOLE_Y + 16); g.lineTo(x + 3, HOLE_Y + 16); g.lineTo(x + 7, H - 18); g.lineTo(x - 1, H - 18); g.closePath(); g.fill();
+    g.fillStyle = '#F2C230'; g.beginPath(); g.moveTo(x - 3, HOLE_Y + 16); g.lineTo(x + 1, HOLE_Y + 16); g.lineTo(x + 4, H - 18); g.lineTo(x - 1, H - 18); g.closePath(); g.fill();
+  }
+  g.strokeStyle = '#F4F6F5'; g.lineWidth = 5; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(5, H - 12); g.lineTo(5, 46); g.quadraticCurveTo(5, 12, 40, 12); g.lineTo(LANE - 30, 12); g.quadraticCurveTo(LANE + 18, 12, LANE + 18, 46); g.lineTo(LANE + 18, H - 10); g.stroke();
+  g.lineWidth = 3; g.beginPath(); g.moveTo(LANE - 6, H - 10); g.lineTo(LANE - 6, 70); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '11px "IBM Plex Sans KR", sans-serif'; g.textAlign = 'center';
+  for (let i = 0; i < N; i++) g.fillText(i + 1, holeX(i), H - 4);
+})();
+function drawField(ball, redShow) {
+  ctx.drawImage(bg, 0, 0);
+  const rainbowOn = G && G.rainbow && !G.done;
+  for (let i = 0; i < N; i++) {
+    const x = holeX(i), t = G && G.lamps[i], isRb = rainbowOn && i === rainbowPos;
+    const col = isRb ? 'hsl(' + ((performance.now() / 3) % 360) + ',100%,55%)' : (t ? LCOL[t] : null);
+    ctx.fillStyle = '#0A0F0C'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 12, 0, 7); ctx.fill();
+    if (col) { const gl = ctx.createRadialGradient(x, HOLE_Y, 2, x, HOLE_Y, 18); gl.addColorStop(0, col); gl.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, HOLE_Y, 18, 0, 7); ctx.fill(); }
+    ctx.fillStyle = col || '#F2F2F2'; ctx.beginPath(); ctx.arc(x, HOLE_Y, 8.5, 0, 7); ctx.fill();
+    if (col) {
+      const lab = isRb ? '10+' : t === 'b' ? '10' : t === 'g' ? '5' : t === 'y' ? '1-2' : (G.phase === 'fg' ? '3' : '+1');
+      ctx.fillStyle = t === 'y' && !isRb ? '#3A3000' : '#fff'; ctx.font = 'bold ' + (lab.length > 2 ? 7 : 9) + 'px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(lab, x, HOLE_Y + 0.5); ctx.textBaseline = 'alphabetic';
+    }
+  }
+  const pull = charging ? power : 0;
+  ctx.fillStyle = '#9AA59F'; ctx.fillRect(LANE + 1, H - 18 + pull * 12, 10, 18);
+  ctx.fillStyle = '#C8102E'; ctx.beginPath(); ctx.arc(LANE + 6, H - 2 + pull * 12, 7, 0, 7); ctx.fill();
+  if (ball) {
+    const bgd = ctx.createRadialGradient(ball[0] - 2.4, ball[1] - 2.4, 1, ball[0], ball[1], 8.4);
+    bgd.addColorStop(0, '#FFF3B0'); bgd.addColorStop(0.5, '#F2B705'); bgd.addColorStop(1, '#9C6B00');
+    ctx.fillStyle = bgd; ctx.beginPath(); ctx.arc(ball[0], ball[1], 8.4, 0, 7); ctx.fill();
+  }
+}
+/* flight = launch up the lane and along the top rail (decelerating), then a gravity fall through the pins */
+function buildFlight(r) {
+  const aimX = r.manual ? holeX(r.aim) : holeX(r.hole);
+  const entryX = Math.max(30, Math.min(LANE - 26, aimX + (Math.random() - .5) * 40));
+  const A = [];
+  for (let y = H - 20; y >= 46; y -= 4) A.push([LANE + 6, y]);
+  for (let a = 0; a <= 90; a += 5) { const t = a * Math.PI / 180; A.push([LANE - 14 + 20 * Math.cos(t), 46 - 20 * Math.sin(t)]); }
+  for (let x = LANE - 18; x > entryX; x -= 4) A.push([x, 26]);
+  A.push([entryX, 26]);
+  const cum = [0];
+  for (let i = 1; i < A.length; i++) cum.push(cum[i - 1] + Math.hypot(A[i][0] - A[i - 1][0], A[i][1] - A[i - 1][1]));
+  const LA = cum[cum.length - 1];
+  const tx = holeX(r.hole), B = [[entryX, 26]];
+  let x = entryX;
+  for (let row = 0; row < 6; row++) {
+    const remain = 6 - row;
+    x += (tx - x) / remain + (Math.random() - .5) * 18 * (remain > 2 ? 1 : .3);
+    x = Math.max(16, Math.min(LANE - 20, x));
+    B.push([x, pinY(row, x) - 10]);
+  }
+  B.push([tx, HOLE_Y - 18], [tx, HOLE_Y]);
+  const dB = [300, 190, 180, 170, 165, 160, 160, 100];
+  return { A, cum, LA, dA: 500 + LA * 1.15, B, dB };
+}
+function pointAt(fl, s) {
+  let i = 1; while (i < fl.cum.length - 1 && fl.cum[i] < s) i++;
+  const a = fl.A[i - 1], b = fl.A[i], seg = fl.cum[i] - fl.cum[i - 1] || 1, u = Math.max(0, Math.min(1, (s - fl.cum[i - 1]) / seg));
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+}
+const spd = () => +$('speed').value;
+/* ---------- sound (Web Audio, synthesized) ---------- */
+var soundOn = true, actx = null, chargeOsc = null, chargeGain = null;
+const VOL = 0.5; /* overall sound level */
+try { if (localStorage.getItem('tdSound') === 'off') soundOn = false; } catch (e) {}
+function ac() {
+  if (!soundOn) return null;
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { return null; }
+  return actx;
+}
+function tone(f, d, type = 'sine', v = 0.12, delay = 0, f2 = null) {
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * VOL, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + 0.02);
+}
+function noise(d, v = 0.08, hp = 800) {
+  const a = ac(); if (!a) return;
+  const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = b; f.type = 'highpass'; f.frequency.value = hp; g.gain.value = v * VOL;
+  s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  rgb() { SFX.red(); },
+  launch() { noise(0.25, 0.12, 400); tone(180, 0.3, 'triangle', 0.1, 0, 520); },
+  pin() { tone(1400 + Math.random() * 900, 0.05, 'square', 0.035); },
+  chase() { tone(880, 0.05, 'square', 0.08); },
+  drop() { tone(300, 0.12, 'triangle', 0.12, 0, 120); },
+  ok() { tone(784, 0.12, 'triangle', 0.12); tone(1046, 0.18, 'triangle', 0.12, 0.09); },
+  red() { [659, 784, 988, 1318].forEach((f, i) => tone(f, 0.16, 'square', 0.07, i * 0.07)); tone(1318, 0.35, 'triangle', 0.1, 0.3); },
+  jp() { [523, 659, 784, 1046, 784, 1046, 1318, 1568].forEach((f, i) => tone(f, 0.2, 'square', 0.07, i * 0.11)); tone(1046, 0.9, 'triangle', 0.12, 0.9); noise(0.6, 0.05, 3000); },
+  miss() { tone(220, 0.35, 'sawtooth', 0.07, 0, 110); },
+  end() { tone(330, 0.25, 'triangle', 0.08, 0, 220); }
+};
+function chargeStart() {
+  const a = ac(); if (!a) return;
+  chargeOsc = a.createOscillator(); chargeGain = a.createGain();
+  chargeOsc.type = 'triangle'; chargeOsc.frequency.value = 200; chargeGain.gain.value = 0.04 * VOL;
+  chargeOsc.connect(chargeGain).connect(a.destination); chargeOsc.start();
+}
+function chargeSet(p) { if (chargeOsc) chargeOsc.frequency.setTargetAtTime(200 + p * 500, actx.currentTime, 0.02); }
+function chargeStop() { if (chargeOsc) { try { chargeGain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.02); chargeOsc.stop(actx.currentTime + 0.1); } catch (e) {} chargeOsc = null; } }
+
+function animate(r) {
+  return new Promise(done => {
+    const fl = buildFlight(r), k = (reduce ? 0.35 : 1) / spd();
+    const tA = fl.dA * k, dB = fl.dB.map(d => d * k), total = tA + dB.reduce((a, b) => a + b, 0);
+    let t0 = null, lastSeg = -1, lastChase = 0;
+    SFX.launch();
+    function frame(ts) {
+      if (!t0) { t0 = ts; lastChase = ts; }
+      const el = Math.min(ts - t0, total);
+      let ball;
+      if (el < tA) {
+        const u = el / tA, s = fl.LA * (1 - (1 - u) * (1 - u));
+        ball = pointAt(fl, s);
+      } else {
+        let e = el - tA, j = 0;
+        while (j < dB.length - 1 && e > dB[j]) { e -= dB[j]; j++; }
+        const u = Math.min(1, e / dB[j]), a = fl.B[j], b = fl.B[j + 1];
+        if (j !== lastSeg) { lastSeg = j; if (j >= 1 && j < dB.length - 1) SFX.pin(); }
+        const bounce = j >= 1 && j < dB.length - 1 ? -Math.sin(u * Math.PI) * 5 : 0;
+        ball = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u * u + bounce];
+      }
+      
+      if (ts - lastChase >= 90 / spd()) { lastChase = ts; stepRainbow(); }
+      drawField(ball, redPos);
+      if (el < total) requestAnimationFrame(frame); else { SFX.drop(); done(); }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+/* ---------- stats view ---------- */
+function render() {
+  const sk = skillKey(), t = tr();
+  $('avg').textContent = st.cred ? (st.tix / st.cred).toFixed(1) : '0.0';
+  $('theory').textContent = t.theory((THEORY[sk] * mult()).toFixed(1));
+  $('sCred').textContent = fmt(st.cred); $('sCredF').textContent = st.cred ? t.credF(fmt(st.balls), (st.balls / st.cred).toFixed(1)) : t.cred; $('sTix').textContent = fmt(st.tix);
+  $('sAvg').textContent = st.cred ? t.unit((st.tix / st.cred).toFixed(1)) : '0.0';
+  $('sRecent').textContent = recent.length ? t.unit((recent.reduce((a, b) => a + b, 0) / recent.length).toFixed(1)) : '-';
+  $('sTheory').textContent = t.unit((THEORY[sk] * mult()).toFixed(1));
+  $('sStep').textContent = G.done ? '-' : G.phase === 'drive' ? t.mChanceN(G.down) : G.phase === 'fg' ? 'FG' : 'JP';
+  $('sRed').textContent = fmt(st.td); $('sRedF').textContent = st.td ? t.redF(Math.round(st.games / st.td)) : t.red;
+  $('sJp').textContent = fmt(st.jp); $('sJpF').textContent = st.jp ? t.jpF(Math.round(st.games / st.jp)) : t.jp;
+  $('sMiss').textContent = fmt(st.reach[0]) + (st.games ? ' (' + (st.reach[0] / st.games * 100).toFixed(0) + '%)' : '');
+  const tot = st.games || 1; let h = '';
+  for (let k = 0; k < 4; k++) {
+    const pct = st.reach[k] / tot * 100;
+    h += `<div class="drow"><span>${t.reach(k)}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span>${pct.toFixed(1)}%</span></div>`;
+  }
+  $('dist').innerHTML = h;
+  const L = $('log');
+  if (!log.length) L.innerHTML = `<li style="display:block;color:var(--muted)">${t.logEmpty}</li>`;
+  else L.innerHTML = log.slice(0, 30).map(e => {
+    return `<li><span>#${e.n}</span><span>${t.mChanceN(e.down).split(' ')[0]}</span><span>${t.holeN(e.hole)} <span class="tag ${e.kind}">${logDesc(e)}</span></span><span>${e.total ? '+' + fmt(e.total) : ''}</span></li>`;
+  }).join('');
+  drawLadder();
+}
+
+/* ---------- control ---------- */
+/* ---------- credits: a play needs a credit (one-shot: every ball, multi-shot: the first ball of a credit) ---------- */
+let credits = 0;
+const needCredit = () => typeof inCredit === 'undefined' || !inCredit;
+function showCredit() { $('credit').textContent = $('credit2').textContent = tr().creditBtn(credits); $('crdTop').textContent = 'CREDIT ' + credits; }
+function noCredit() {
+  if (running) $('play').onclick();
+  const b = $('banner');
+  $('b1').textContent = 'INSERT CREDIT'; $('b2').textContent = '';
+  b.className = 'banner show miss';
+  clearTimeout(bannerT); bannerT = setTimeout(() => b.className = 'banner miss', 1800);
+  SFX.end();
+}
+function takeCredit() {
+  if (!needCredit()) return true;
+  if (credits <= 0) { noCredit(); return false; }
+  credits--; showCredit(); return true;
+}
+const pause = ms => new Promise(z => setTimeout(z, ms / spd()));
+const SFXK = { gain: 'ok', first: 'red', fail: 'miss', td: 'jp', over: 'end', fg: 'red', jp: 'jp', td6: 'jp' };
+async function playOne(given) {
+  if (busy) return;
+  if (!takeCredit()) return;
+  busy = true;
+  const r = given || shoot();
+  await animate(r);
+  r.rb = G.rainbow && !G.done ? rainbowPos : -1; /* the rainbow lamp is judged the moment the ball drops */
+  const res = settle(r);
+  pushLog(r, res);
+  SFX[SFXK[res.kind]]();
+  if (res.end) lastTitle = res.kind;
+  banner(res); render(); drawField(null, redPos);
+  if (res.end) { await pause(res.kind === 'jp' ? 2400 : 1800); newGame(); }
+  else if (res.kind === 'first' || res.kind === 'td' || res.fgOpen) await pause(700);
+  render(); drawField(null, redPos);
+  busy = false;
+}
+async function loop() {
+  while (running) { await playOne(); await new Promise(z => setTimeout(z, 250 / spd())); }
+}
+function batch(n) {
+  running = false; $('play').textContent = tr().playStart; $('play').setAttribute('aria-pressed', 'false');
+  let done = 0;
+  while (done < n || inCredit) { const r = shoot(); const res = settle(r); pushLog(r, res); if (res.end) { newGame(); done++; } }
+  render(); drawField(null, redPos);
+  SFX.ok();
+}
+$('play').onclick = () => {
+  running = !running;
+  $('play').textContent = running ? tr().playStop : tr().playStart;
+  $('play').setAttribute('aria-pressed', running ? 'true' : 'false');
+  if (running) loop();
+};
+$('credit').onclick = $('credit2').onclick = () => { credits++; showCredit(); SFX.ok(); };
+$('one').onclick = () => { if (!running) playOne(); };
+
+/* ---------- manual launch with power ---------- */
+var charging = false, power = 0, chargeT0 = 0;
+const holeFor = p => Math.round((1 - p) * (N - 1));
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function showPower() {
+  $('vfill').style.height = (power * 100) + '%';
+  $('guess').textContent = tr().guess(Math.round(power * 100), holeFor(power) + 1);
+}
+function chargeFrame(ts) {
+  if (!charging) return;
+  if (!chargeT0) chargeT0 = ts;
+  const t = ((ts - chargeT0) / 1400) % 2;
+  power = t < 1 ? t : 2 - t;
+  chargeSet(power);
+  showPower();
+  if (!busy) drawField(null, redPos);
+  requestAnimationFrame(chargeFrame);
+}
+function startCharge() {
+  if (busy || charging) return;
+  if (needCredit() && credits <= 0) { noCredit(); return; }
+  if (running) $('play').onclick();
+  charging = true; chargeT0 = 0; power = 0; $('fire').classList.add('held'); chargeStart();
+  requestAnimationFrame(chargeFrame);
+}
+function release() {
+  if (!charging) return;
+  charging = false; $('fire').classList.remove('held'); chargeStop();
+  const hole = Math.random() < 0.15 ? Math.floor(Math.random() * N) : Math.max(0, Math.min(N - 1, Math.round((1 - power) * (N - 1) + gauss() * 1.4)));
+  playOne({ k: 1, hole, red: -1, aim: holeFor(power), manual: true });
+}
+const fire = $('fire'), knob = $('knob');
+knob.addEventListener('pointerdown', e => { e.preventDefault(); knob.setPointerCapture(e.pointerId); knob.classList.add('held'); startCharge(); });
+knob.addEventListener('pointerup', () => { knob.classList.remove('held'); release(); });
+knob.addEventListener('pointercancel', () => { knob.classList.remove('held'); release(); });
+fire.addEventListener('pointerdown', e => { e.preventDefault(); fire.setPointerCapture(e.pointerId); startCharge(); });
+fire.addEventListener('pointerup', release);
+fire.addEventListener('pointercancel', release);
+fire.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); startCharge(); } });
+fire.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); release(); } });
+document.addEventListener('keydown', e => { if (e.key === ' ' && !e.repeat && e.target === document.body) { e.preventDefault(); startCharge(); } });
+document.addEventListener('keyup', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); release(); } });
+$('b1k').onclick = () => { if (!busy) batch(1000); };
+$('b10k').onclick = () => { if (!busy) batch(10000); };
+$('reset').onclick = () => {
+  if (busy) return;
+  st = newStats(); jp = JP_BASE;
+  inCredit = false; credTix = 0; ballNo = 0;
+  log = []; recent = []; newGame();
+  render(); drawField(null, redPos);
+};
+['mult', 'skill', 'tries'].forEach(id => $(id).onchange = () => $('reset').onclick());
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { LANG = b.dataset.lang; try { localStorage.setItem('tdLang', LANG); } catch (e) {} applyLang(); render(); showPower(); });
+$('snd').onclick = () => { soundOn = !soundOn; try { localStorage.setItem('tdSound', soundOn ? 'on' : 'off'); } catch (e) {} if (!soundOn) chargeStop(); else SFX.ok(); applyLang(); };
+/* unlock audio on the first tap or key press anywhere on the page */
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (soundOn) ac(); }, { passive: true }));
+applyLang(); showPower();
+render(); drawField(null, redPos);
+/* the rainbow lamp sweeps quickly left and right, with an occasional jump */
+function stepRainbow() {
+  if (!G || !G.rainbow || G.done) return;
+  if (Math.random() < .12) { rainbowPos = Math.floor(Math.random() * N); return; }
+  rainbowPos += rbDir;
+  if (rainbowPos >= N - 1) { rainbowPos = N - 1; rbDir = -1; }
+  if (rainbowPos <= 0) { rainbowPos = 0; rbDir = 1; }
+}
+(function idleRainbow() {
+  if (!busy) { stepRainbow(); drawField(null, redPos); }
+  setTimeout(idleRainbow, 90 / spd());
+})();
+</script>
+</body>
+</html>
