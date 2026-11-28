@@ -5,6 +5,13 @@
 - 1주차 시장 조사: [week1-market-research.md](week1-market-research.md)
 - 2주차 운영사/경쟁 기종/인증/결제 조사: [week2-competitor-research.md](week2-competitor-research.md)
 - 3주차 제품 컨셉안: [week3-concepts.md](week3-concepts.md)
+- 4주차 제품 기획서(초안): [week4-product-plan.md](week4-product-plan.md)
+
+## 3주차 이후 확정 사항
+- 핵심 메커닉: 조준 (타이밍, 반응 속도 제외)
+- 네트워크: 선택 모듈
+- 티켓: 카드 적립 방식, 한도 없음, Big Bonus 약 5,000장
+- 개발 범위: 디자인, 기구, 전장, 프로그램 전체 자체 개발
 
 ## 목표
 - 미국 시장에 티켓 리뎀션 게임기 **5,000대**를 공급하는 것을 목표로, 후보 기종을 조사하고 제품 기획 아이디어를 완성한다.
