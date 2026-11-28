@@ -5,9 +5,10 @@
 - 1주차 시장 조사: [week1-market-research.md](week1-market-research.md)
 - 2주차 운영사/경쟁 기종/인증/결제 조사: [week2-competitor-research.md](week2-competitor-research.md)
 - 3주차 제품 컨셉안: [week3-concepts.md](week3-concepts.md)
-- 4주차 제품 기획서(초안): [week4-product-plan.md](week4-product-plan.md)
+- 4주차 제품 기획서(초안 v0.2): [week4-product-plan.md](week4-product-plan.md)
 
 ## 3주차 이후 확정 사항
+- 게임 방식: 퀵플레이(1회 20~30초), 기구(전기기계) 중심, 비디오는 보조 역할 (기획서 v0.2)
 - 핵심 메커닉: 조준 (타이밍, 반응 속도 제외)
 - 네트워크: 선택 모듈
 - 티켓: 카드 적립 방식, 한도 없음, Big Bonus 약 5,000장
